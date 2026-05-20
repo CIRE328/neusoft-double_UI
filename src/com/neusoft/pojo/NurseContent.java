@@ -1,6 +1,6 @@
 package com.neusoft.pojo;
 
-public class NurseContent {
+public class NrusContent {
     private Integer id;
     private String serialNumber;
     private String nursingName;
@@ -11,11 +11,11 @@ public class NurseContent {
     private String executionTime;
     private Integer isDeleted;
 
-    public NurseContent() {}
+    public NrusContent() {}
 
-    public NurseContent(Integer id, String serialNumber, String nursingName, String servicePrice,
-                        String message, Integer status, String executionCycle,
-                        String executionTime, Integer isDeleted) {
+    public NrusContent(Integer id, String serialNumber, String nursingName, String servicePrice,
+                       String message, Integer status, String executionCycle,
+                       String executionTime, Integer isDeleted) {
         this.id = id;
         this.serialNumber = serialNumber;
         this.nursingName = nursingName;
