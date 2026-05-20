@@ -1,4 +1,4 @@
-package com.neusoft.entity;
+package com.neusoft.pojo;
 
 public class NurseLevelItem {
     private Integer id;

@@ -1,4 +1,4 @@
-package com.neusoft.entity;
+package com.neusoft.pojo;
 
 import java.math.BigDecimal;
 

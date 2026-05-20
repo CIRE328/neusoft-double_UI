@@ -1,6 +1,6 @@
-package com.neusoft.entity;
+package com.neusoft.pojo;
 
-public class NrusContent {
+public class NruseContent {
     private Integer id;
     private String serialNumber;
     private String nursingName;
@@ -11,9 +11,9 @@ public class NrusContent {
     private String executionTime;
     private Integer isDeleted;
 
-    public NrusContent() {}
+    public NruseContent() {}
 
-    public NrusContent(Integer id, String serialNumber, String nursingName, String servicePrice,
+    public NruseContent(Integer id, String serialNumber, String nursingName, String servicePrice,
                        String message, Integer status, String executionCycle,
                        String executionTime, Integer isDeleted) {
         this.id = id;
