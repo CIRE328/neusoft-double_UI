@@ -13,16 +13,13 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
     private final Map<String, Field> columnToFieldMap;
     private final boolean useLogicDelete;  // 是否支持逻辑删除
 
-    /**
-     * 构造函数（默认支持逻辑删除）
-     */
+    //构造函数（默认支持逻辑删除）
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass) {
         this(tableName, idColumn, entityClass, true);
     }
 
-    /**
-     * 构造函数（可指定是否支持逻辑删除）
-     * @param useLogicDelete 表中是否有 is_deleted 列
+    /*构造函数（可指定是否支持逻辑删除）
+     *@param useLogicDelete 表中是否有 is_deleted 列
      */
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass, boolean useLogicDelete) {
         this.tableName = tableName;
@@ -56,7 +53,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return sb.toString();
     }
 
-    // ========== SQL 生成（根据 useLogicDelete 动态调整） ==========
+    //SQL 生成（根据 useLogicDelete 动态调整）
     private String getSelectByIdSql() {
         String sql = "SELECT * FROM " + tableName + " WHERE " + idColumn + " = ?";
         if (useLogicDelete) sql += " AND is_deleted = 0";
@@ -112,7 +109,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
     }
 
-    // ========== 受保护的辅助方法 ==========
+    //受保护的辅助方法
     protected List<T> executeQuery(String sql, Object... params) {
         List<T> list = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
@@ -161,7 +158,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
     }
 
-    // ========== BaseDao 接口实现 ==========
+    //BaseDao 接口实现
     @Override
     public List<T> findAll() {
         return executeQuery(getSelectAllSql(false));
