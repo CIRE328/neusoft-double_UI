@@ -192,7 +192,12 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                 if (rs.next()) {
                     Field idField = columnToFieldMap.get(idColumn);
                     if (idField != null) {
-                        idField.set(entity, rs.getObject(1));
+                        Object key = rs.getObject(1);
+                        if (key instanceof Number) {
+                            idField.set(entity, ((Number) key).intValue());
+                        } else {
+                            idField.set(entity, key);
+                        }
                     }
                 }
             }

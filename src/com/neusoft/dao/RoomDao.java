@@ -6,7 +6,7 @@ import java.util.List;
 public class RoomDao extends BaseDaoImpl<Room, Integer> {
 
     public RoomDao() {
-        super("room", "id", Room.class);
+        super("room", "id", Room.class, false);
     }
 
     //根据楼层查询房间

@@ -48,6 +48,8 @@ public class DAOTest {
         u.setCreateTime(new Date());
         u.setUpdateTime(new Date());
         u.setIsDeleted(0);
+        u.setCreateBy(1);
+        u.setUpdateBy(1);
         User inserted = dao.insert(u);
         System.out.println("插入后ID: " + inserted.getId());
         // 按ID查询

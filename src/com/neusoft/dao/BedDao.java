@@ -6,7 +6,7 @@ import java.util.List;
 public class BedDao extends BaseDaoImpl<Bed, Integer> {
 
     public BedDao() {
-        super("bed", "id", Bed.class);
+        super("bed", "id", Bed.class, false);
     }
 
     //根据房间号查询床位
