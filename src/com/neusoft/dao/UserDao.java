@@ -7,7 +7,7 @@ import java.util.Optional;
 public class UserDao extends BaseDaoImpl<User, Integer> {
 
     public UserDao() {
-        super("user", "id", User.class, false);
+        super("user", "id", User.class);
     }
 
     // 自定义查询：根据用户名查找

@@ -7,7 +7,7 @@ import java.util.Optional;
 public class RoleDao extends BaseDaoImpl<Role, Integer> {
 
     public RoleDao() {
-        super("role", "id", Role.class, false);
+        super("role", "id", Role.class);
     }
 
     //根据角色名称查询
