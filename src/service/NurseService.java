@@ -176,4 +176,8 @@ public class NurseService {
     public boolean deleteNurseRecord(Integer recordId) {
         return nurseRecordDao.deleteById(recordId);
     }
+
+    public List<NurseRecord> getNurseRecordsByHousekeeper(Integer housekeeperId) {
+        return nurseRecordDao.findByUserId(housekeeperId); // 假设 NurseRecordDao 有 findByUserId 方法
+    }
 }

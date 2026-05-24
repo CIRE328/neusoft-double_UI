@@ -110,4 +110,26 @@ public class BedService {
         }
         return all;
     }
+
+    public List<Bed> getFreeBedsByRoom(Integer roomNo) {
+        return bedDao.findByRoomNo(roomNo).stream()
+                .filter(b -> b.getBedStatus() == 1)
+                .collect(Collectors.toList());
+    }
+
+    public List<Integer> getAllRoomNumbers() {
+        return roomDao.findAll().stream().map(Room::getRoomNo).collect(Collectors.toList());
+    }
+
+    public List<Bed> getAllBeds() {
+        return bedDao.findAll();
+    }
+
+    public Integer getCustomerIdByBedId(Integer bedId) {
+        return bedDetailsDao.findAll().stream()
+                .filter(d -> d.getBedId().equals(bedId) && d.getEndDate() == null)
+                .map(BedDetails::getCustomerId)
+                .findFirst()
+                .orElse(null);
+    }
 }

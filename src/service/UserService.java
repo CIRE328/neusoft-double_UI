@@ -26,17 +26,21 @@ public class UserService {
     }
 
     public User addUser(User user) {
+        // 校验账号唯一性
         if (userDao.findAll().stream().anyMatch(u -> u.getUsername().equals(user.getUsername()))) {
             System.err.println("用户名已存在");
             return null;
         }
-        if (user.getPhoneNumber() != null && user.getPhoneNumber().length() >= 6) {
-            user.setPassword(user.getPhoneNumber().substring(user.getPhoneNumber().length() - 6));
-        } else {
-            user.setPassword("123456");
+        // 如果密码为空，则默认设置为手机号后6位
+        if (user.getPassword() == null || user.getPassword().isEmpty()) {
+            if (user.getPhoneNumber() != null && user.getPhoneNumber().length() >= 6) {
+                user.setPassword(user.getPhoneNumber().substring(user.getPhoneNumber().length() - 6));
+            } else {
+                user.setPassword("123456");
+            }
         }
-        user.setCreateTime(DateUtils.now());
-        user.setUpdateTime(DateUtils.now());
+        user.setCreateTime(new Date());
+        user.setUpdateTime(new Date());
         user.setIsDeleted(0);
         return userDao.insert(user);
     }
