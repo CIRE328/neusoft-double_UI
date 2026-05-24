@@ -159,18 +159,15 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
     }
 
     //BaseDao 接口实现
-    @Override
     public List<T> findAll() {
         return executeQuery(getSelectAllSql(false));
     }
 
-    @Override
     public Optional<T> findById(ID id) {
         List<T> list = executeQuery(getSelectByIdSql(), id);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 
-    @Override
     public T insert(T entity) {
         String sql = getInsertSql();
         List<String> insertColumns = columnToFieldMap.keySet().stream()
@@ -207,7 +204,6 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return entity;
     }
 
-    @Override
     public T update(T entity) {
         String sql = getUpdateSql();
         List<String> updateColumns = columnToFieldMap.keySet().stream()
@@ -232,7 +228,6 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return entity;
     }
 
-    @Override
     public boolean deleteById(ID id) {
         if (!useLogicDelete) {
             // 如果不支持逻辑删除，则直接物理删除（或抛异常）

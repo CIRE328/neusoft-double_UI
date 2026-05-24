@@ -1,8 +1,7 @@
 package service;
 
 import dao.*;
-import pojo.*;
-
+import pojo.Bed;
 import java.util.*;
 
 public class StatisticsService {
@@ -21,7 +20,7 @@ public class StatisticsService {
     }
 
     public Map<String, Integer> getCustomerStatistics() {
-        List<Customer> customers = customerDao.findAll();
+        List<pojo.Customer> customers = customerDao.findAll();
         int total = customers.size();
         int selfCare = (int) customers.stream().filter(c -> c.getLevelId() == null).count();
         return Map.of("total", total, "selfCare", selfCare, "nursingCare", total - selfCare);
