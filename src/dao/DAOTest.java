@@ -1,7 +1,6 @@
 package dao;
 
-import com.neusoft.dao.*;
-import com.neusoft.pojo.*;
+import dao.*;
 import pojo.*;
 
 import java.util.Date;

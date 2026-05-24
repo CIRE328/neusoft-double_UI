@@ -7,14 +7,14 @@ import java.util.Optional;
 public class PreferenceDao extends BaseDaoImpl<Preference, Integer> {
 
     public PreferenceDao() {
-        super("customer_preference", "id", Preference.class);
+        super("preference", "id", Preference.class);
     }
 
     /**
      * 根据客户ID查询饮食喜好
      */
     public Optional<Preference> findByCustomerId(Integer customerId) {
-        String sql = "SELECT * FROM customer_preference WHERE customer_id = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM preference WHERE customer_id = ? AND is_deleted = 0";
         List<Preference> list = executeQuery(sql, customerId);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }

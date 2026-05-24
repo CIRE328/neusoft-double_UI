@@ -1,10 +1,7 @@
 package service;
 
-import dao.CustomerDao;
-import dao.UserDao;
-import pojo.Customer;
-import pojo.User;
-
+import dao.*;
+import pojo.*;
 import java.util.*;
 import java.util.stream.Collectors;
 

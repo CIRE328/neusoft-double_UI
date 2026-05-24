@@ -11,13 +11,13 @@ public class RoomDao extends BaseDaoImpl<Room, Integer> {
 
     //根据楼层查询房间
     public List<Room> findByFloor(String floor) {
-        String sql = "SELECT * FROM room WHERE room_floor = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM room WHERE room_floor = ? ";
         return executeQuery(sql, floor);
     }
 
     //根据房间号查询
     public Room findByRoomNo(Integer roomNo) {
-        String sql = "SELECT * FROM room WHERE room_no = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM room WHERE room_no = ?";
         List<Room> list = executeQuery(sql, roomNo);
         return list.isEmpty() ? null : list.get(0);
     }
