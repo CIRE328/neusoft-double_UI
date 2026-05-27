@@ -64,7 +64,7 @@ public class HousekeeperPanel extends JPanel {
         customerModel = new DefaultTableModel(customerCols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
-                return col == 4;
+                return col == 4 || col == 5; // 分配列和移除列均可编辑
             }
         };
         customerTable = new JTable(customerModel);
@@ -129,10 +129,15 @@ public class HousekeeperPanel extends JPanel {
     }
 
     private void assignHousekeeper(ActionEvent e) {
-        // 不再传入 customerId
-        AssignHousekeeperDialog dialog = new AssignHousekeeperDialog(SwingUtilities.getWindowAncestor(this), housekeeperService);
-        dialog.setVisible(true);
-        if (dialog.isSuccess()) loadData();
+        // 停止客户表格编辑
+        if (customerTable.isEditing()) {
+            customerTable.getCellEditor().stopCellEditing();
+        }
+        SwingUtilities.invokeLater(() -> {
+            AssignHousekeeperDialog dialog = new AssignHousekeeperDialog(SwingUtilities.getWindowAncestor(this), housekeeperService);
+            dialog.setVisible(true);
+            if (dialog.isSuccess()) loadData();
+        });
     }
 
     private void removeHousekeeper(ActionEvent e) {

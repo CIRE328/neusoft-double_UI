@@ -93,11 +93,17 @@ public class NurseLevelPanel extends JPanel {
     }
 
     private void configItems(ActionEvent e) {
+        // 停止当前表格编辑
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
         int row = Integer.parseInt(e.getActionCommand());
         Integer levelId = (Integer) tableModel.getValueAt(row, 0);
-        NurseLevelItemDialog dialog = new NurseLevelItemDialog(SwingUtilities.getWindowAncestor(this), nurseService, levelId);
-        dialog.setVisible(true);
-        loadData();
+        SwingUtilities.invokeLater(() -> {
+            NurseLevelItemDialog dialog = new NurseLevelItemDialog(SwingUtilities.getWindowAncestor(this), nurseService, levelId);
+            dialog.setVisible(true);
+            loadData();
+        });
     }
 
     private void editLevel(ActionEvent e) {

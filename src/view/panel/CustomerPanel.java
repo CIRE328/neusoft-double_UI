@@ -193,14 +193,27 @@ public class CustomerPanel extends JPanel {
     }
 
     private void auditOutward() {
-        AuditOutwardDialog dialog = new AuditOutwardDialog(SwingUtilities.getWindowAncestor(this));
-        dialog.setVisible(true);
-        refresh();
+        // 强制停止表格编辑，避免事件冲突
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
+        SwingUtilities.invokeLater(() -> {
+            AuditOutwardDialog dialog = new AuditOutwardDialog(SwingUtilities.getWindowAncestor(this));
+            dialog.setVisible(true);
+            loadData(); // 刷新
+        });
     }
 
     private void auditBackdown() {
-        AuditBackdownDialog dialog = new AuditBackdownDialog(SwingUtilities.getWindowAncestor(this));
-        dialog.setVisible(true);
-        refresh();
+        // 强制停止表格编辑，避免事件冲突
+        if (table.isEditing()) {
+            table.getCellEditor().stopCellEditing();
+        }
+        SwingUtilities.invokeLater(() -> {
+            AuditBackdownDialog dialog = new AuditBackdownDialog(SwingUtilities.getWindowAncestor(this));
+            dialog.setVisible(true);
+            loadData(); // 刷新
+        });
     }
+
 }

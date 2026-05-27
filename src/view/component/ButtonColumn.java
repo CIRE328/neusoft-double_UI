@@ -69,8 +69,11 @@ public class ButtonColumn extends AbstractCellEditor
     public void mouseClicked(MouseEvent e) {
         int row = table.rowAtPoint(e.getPoint());
         int col = table.columnAtPoint(e.getPoint());
-        if (col == column && row >= 0 && table.isEditing()) {
-            table.getCellEditor(row, col).getTableCellEditorComponent(table, null, true, row, col);
+        if (col == column && row >= 0) {
+            // 如果单元格正在编辑，则启动编辑器；否则忽略，因为按钮已经通过 ActionListener 处理
+            if (table.isEditing()) {
+                table.getCellEditor(row, col).getTableCellEditorComponent(table, null, true, row, col);
+            }
         }
     }
 

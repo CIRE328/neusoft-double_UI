@@ -16,6 +16,7 @@ public class NurseItemDialog extends JDialog {
 
     public NurseItemDialog(Window owner, NurseService nurseService, NurseContent item) {
         super(owner, item == null ? "新增护理项目" : "编辑护理项目", ModalityType.APPLICATION_MODAL);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
         this.nurseService = nurseService;
         this.item = item;
         setSize(400, 350);
