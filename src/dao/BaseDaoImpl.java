@@ -11,16 +11,12 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
     private final String idColumn;
     private final Class<T> entityClass;
     private final Map<String, Field> columnToFieldMap;
-    private final boolean useLogicDelete;  // 是否支持逻辑删除
+    private final boolean useLogicDelete;
 
-    //构造函数（默认支持逻辑删除）
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass) {
         this(tableName, idColumn, entityClass, true);
     }
 
-    /*构造函数（可指定是否支持逻辑删除）
-     *@param useLogicDelete 表中是否有 is_deleted 列
-     */
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass, boolean useLogicDelete) {
         this.tableName = tableName;
         this.idColumn = idColumn;
@@ -53,7 +49,6 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return sb.toString();
     }
 
-    //SQL 生成（根据 useLogicDelete 动态调整）
     private String getSelectByIdSql() {
         String sql = "SELECT * FROM " + tableName + " WHERE " + idColumn + " = ?";
         if (useLogicDelete) sql += " AND is_deleted = 0";
@@ -75,7 +70,6 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
             columns.add(column);
             placeholders.add("?");
         }
-        // 如果启用逻辑删除且字段列表中包含 is_deleted，但未显式添加，则加入
         if (useLogicDelete && !columns.contains("is_deleted") && columnToFieldMap.containsKey("is_deleted")) {
             columns.add("is_deleted");
             placeholders.add("?");
@@ -88,11 +82,8 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         List<String> assignments = new ArrayList<>();
         for (Map.Entry<String, Field> entry : columnToFieldMap.entrySet()) {
             String column = entry.getKey();
-            if (column.equals(idColumn)) continue;
+            if (column.equals(idColumn) || "is_deleted".equals(column)) continue; // 更新时排除 is_deleted
             assignments.add(column + " = ?");
-        }
-        if (useLogicDelete && !assignments.stream().anyMatch(s -> s.startsWith("is_deleted"))) {
-            assignments.add("is_deleted = ?");
         }
         return "UPDATE " + tableName + " SET " + String.join(", ", assignments) +
                 " WHERE " + idColumn + " = ?";
@@ -109,7 +100,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
     }
 
-    //受保护的辅助方法
+    // 受保护的辅助方法
     protected List<T> executeQuery(String sql, Object... params) {
         List<T> list = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
@@ -158,17 +149,71 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
     }
 
-    //BaseDao 接口实现
+    // 为实体中的审计字段设置默认值（插入前调用）
+    private void setDefaultValues(T entity) {
+        try {
+            // createTime
+            try {
+                Field f = entityClass.getDeclaredField("createTime");
+                f.setAccessible(true);
+                if (f.get(entity) == null) {
+                    f.set(entity, new java.util.Date());
+                }
+            } catch (NoSuchFieldException ignored) {}
+            // updateTime
+            try {
+                Field f = entityClass.getDeclaredField("updateTime");
+                f.setAccessible(true);
+                if (f.get(entity) == null) {
+                    f.set(entity, new java.util.Date());
+                }
+            } catch (NoSuchFieldException ignored) {}
+            // createBy
+            try {
+                Field f = entityClass.getDeclaredField("createBy");
+                f.setAccessible(true);
+                if (f.get(entity) == null) {
+                    f.set(entity, 0); // 默认0，可根据实际修改
+                }
+            } catch (NoSuchFieldException ignored) {}
+            // updateBy
+            try {
+                Field f = entityClass.getDeclaredField("updateBy");
+                f.setAccessible(true);
+                if (f.get(entity) == null) {
+                    f.set(entity, 0);
+                }
+            } catch (NoSuchFieldException ignored) {}
+            // isDeleted
+            if (useLogicDelete) {
+                try {
+                    Field f = entityClass.getDeclaredField("isDeleted");
+                    f.setAccessible(true);
+                    if (f.get(entity) == null) {
+                        f.set(entity, 0);
+                    }
+                } catch (NoSuchFieldException ignored) {}
+            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // BaseDao 接口实现
+    @Override
     public List<T> findAll() {
         return executeQuery(getSelectAllSql(false));
     }
 
+    @Override
     public Optional<T> findById(ID id) {
         List<T> list = executeQuery(getSelectByIdSql(), id);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
 
+    @Override
     public T insert(T entity) {
+        setDefaultValues(entity); // 设置默认值
         String sql = getInsertSql();
         List<String> insertColumns = columnToFieldMap.keySet().stream()
                 .filter(col -> !col.equals(idColumn))
@@ -204,10 +249,27 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return entity;
     }
 
+    @Override
     public T update(T entity) {
+        // 自动更新 updateTime 和 updateBy（如果有）
+        try {
+            try {
+                Field f = entityClass.getDeclaredField("updateTime");
+                f.setAccessible(true);
+                f.set(entity, new java.util.Date());
+            } catch (NoSuchFieldException ignored) {}
+            try {
+                Field f = entityClass.getDeclaredField("updateBy");
+                f.setAccessible(true);
+                if (f.get(entity) == null) f.set(entity, 0);
+            } catch (NoSuchFieldException ignored) {}
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
         String sql = getUpdateSql();
         List<String> updateColumns = columnToFieldMap.keySet().stream()
-                .filter(col -> !col.equals(idColumn))
+                .filter(col -> !col.equals(idColumn) && !"is_deleted".equals(col))
                 .collect(Collectors.toList());
         List<Object> params = new ArrayList<>();
         try {
@@ -228,9 +290,9 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return entity;
     }
 
+    @Override
     public boolean deleteById(ID id) {
         if (!useLogicDelete) {
-            // 如果不支持逻辑删除，则直接物理删除（或抛异常）
             return forceDeleteById(id);
         }
         return executeUpdate(getLogicDeleteSql(), id) > 0;

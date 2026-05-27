@@ -51,8 +51,9 @@ public class CustomerService {
         if (customer.getBirthday() != null) {
             customer.setCustomerAge(DateUtils.calculateAge(customer.getBirthday()));
         }
-        customer.setBuildingNo("001");
+        customer.setBuildingNo("606");          // 楼栋固定606
         customer.setBedId(bedId);
+        customer.setRoomNo(String.valueOf(bed.getRoomNo()));  // 设置房间号
         if (customer.getUserId() == null) customer.setUserId(-1);
         customer.setIsDeleted(0);
         Customer saved = customerDao.insert(customer);

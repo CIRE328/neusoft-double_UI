@@ -17,6 +17,7 @@ public class NurseLevelPanel extends JPanel {
     private NurseService nurseService;
     private JTable table;
     private DefaultTableModel tableModel;
+    private JComboBox<String> statusCombo;
 
     public NurseLevelPanel(NurseService nurseService) {
         this.nurseService = nurseService;
@@ -26,10 +27,22 @@ public class NurseLevelPanel extends JPanel {
     }
 
     private void initUI() {
-        String[] cols = {"ID", "级别名称", "状态", "配置项目", "操作"};
+        // 顶部筛选栏
+        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        filterPanel.add(new JLabel("状态:"));
+        statusCombo = new JComboBox<>(new String[]{"全部", "启用", "停用"});
+        filterPanel.add(statusCombo);
+        JButton searchBtn = new JButton("查询");
+        JButton refreshBtn = new JButton("刷新");
+        filterPanel.add(searchBtn);
+        filterPanel.add(refreshBtn);
+        add(filterPanel, BorderLayout.NORTH);
+
+        // 表格列（共6列，索引0-5，操作列在3,4,5）
+        String[] cols = {"ID", "级别名称", "状态", "配置项目", "编辑", "删除"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return col == 3 || col == 4; }
+            public boolean isCellEditable(int row, int col) { return col == 3 || col == 4 || col == 5; }
         };
         table = new JTable(tableModel);
         TableUtils.styleTable(table);
@@ -46,13 +59,30 @@ public class NurseLevelPanel extends JPanel {
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(addBtn);
-        add(topPanel, BorderLayout.NORTH);
+        // 将新增按钮放在筛选栏右侧
+        filterPanel.add(Box.createHorizontalStrut(30));
+        filterPanel.add(addBtn);
+
         add(new JScrollPane(table), BorderLayout.CENTER);
+
+        searchBtn.addActionListener(e -> loadData());
+        refreshBtn.addActionListener(e -> {
+            statusCombo.setSelectedIndex(0);
+            loadData();
+        });
     }
 
     private void loadData() {
         tableModel.setRowCount(0);
-        List<NurseLevel> list = nurseService.findAllNurseLevels();
+        String selected = (String) statusCombo.getSelectedItem();
+        List<NurseLevel> list;
+        if ("启用".equals(selected)) {
+            list = nurseService.findNurseLevelsByStatus(1);
+        } else if ("停用".equals(selected)) {
+            list = nurseService.findNurseLevelsByStatus(2);
+        } else {
+            list = nurseService.findAllNurseLevels();
+        }
         for (NurseLevel l : list) {
             String status = l.getLevelStatus() == 1 ? "启用" : "停用";
             tableModel.addRow(new Object[]{
@@ -67,7 +97,7 @@ public class NurseLevelPanel extends JPanel {
         Integer levelId = (Integer) tableModel.getValueAt(row, 0);
         NurseLevelItemDialog dialog = new NurseLevelItemDialog(SwingUtilities.getWindowAncestor(this), nurseService, levelId);
         dialog.setVisible(true);
-        loadData(); // 无需刷新，但保留
+        loadData();
     }
 
     private void editLevel(ActionEvent e) {

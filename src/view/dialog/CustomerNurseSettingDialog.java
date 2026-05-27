@@ -50,7 +50,7 @@ public class CustomerNurseSettingDialog extends JDialog {
         add(infoPanel, BorderLayout.NORTH);
 
         // 中间表格：已购买护理项目
-        String[] cols = {"ID", "项目名称", "剩余次数", "到期日期", "操作"};
+        String[] cols = {"ID", "项目名称", "剩余次数", "到期日期", "续费","移除"};
         itemModel = new DefaultTableModel(cols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) { return col == 4; }

@@ -16,6 +16,7 @@ public class NurseItemPanel extends JPanel {
     private NurseService nurseService;
     private JTable table;
     private DefaultTableModel tableModel;
+    private JTextField searchField;
 
     public NurseItemPanel(NurseService nurseService) {
         this.nurseService = nurseService;
@@ -25,6 +26,18 @@ public class NurseItemPanel extends JPanel {
     }
 
     private void initUI() {
+        // 顶部搜索栏
+        JPanel searchPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        searchPanel.add(new JLabel("项目名称:"));
+        searchField = new JTextField(15);
+        searchPanel.add(searchField);
+        JButton searchBtn = new JButton("查询");
+        JButton refreshBtn = new JButton("刷新");
+        searchPanel.add(searchBtn);
+        searchPanel.add(refreshBtn);
+        add(searchPanel, BorderLayout.NORTH);
+
+        // 表格列（共9列，索引0-8，操作列在7和8）
         String[] cols = {"ID", "编号", "名称", "价格", "执行周期", "执行次数", "状态", "编辑", "删除"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
@@ -44,13 +57,38 @@ public class NurseItemPanel extends JPanel {
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
         topPanel.add(addBtn);
-        add(topPanel, BorderLayout.NORTH);
+        add(topPanel, BorderLayout.SOUTH); // 放在底部或整合到搜索栏右侧均可
+        // 为了布局整洁，将 addBtn 加入 searchPanel 的右侧
+        searchPanel.add(Box.createHorizontalStrut(30));
+        searchPanel.add(addBtn);
+
         add(new JScrollPane(table), BorderLayout.CENTER);
+
+        searchBtn.addActionListener(e -> search());
+        refreshBtn.addActionListener(e -> {
+            searchField.setText("");
+            loadData();
+        });
     }
 
     private void loadData() {
+        loadData(null);
+    }
+
+    private void search() {
+        String keyword = searchField.getText().trim();
+        loadData(keyword.isEmpty() ? null : keyword);
+    }
+
+    private void loadData(String keyword) {
         tableModel.setRowCount(0);
-        List<NurseContent> list = nurseService.findAllNurseContents();
+        List<NurseContent> list;
+        if (keyword == null) {
+            list = nurseService.findAllNurseContents();
+        } else {
+            // 使用 findNurseContentsByName 方法
+            list = nurseService.findNurseContentsByName(keyword);
+        }
         for (NurseContent c : list) {
             String status = c.getStatus() == 1 ? "启用" : "停用";
             tableModel.addRow(new Object[]{

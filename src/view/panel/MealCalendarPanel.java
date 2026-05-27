@@ -2,6 +2,7 @@ package view.panel;
 
 import pojo.Food;
 import pojo.Meal;
+import service.CustomerService;
 import service.MealService;
 import view.component.ButtonColumn;
 import view.util.TableUtils;
@@ -14,7 +15,9 @@ import java.util.List;
 
 public class MealCalendarPanel extends JPanel {
     private MealService mealService;
+    private CustomerService customerService = new CustomerService();
     private JComboBox<String> weekCombo;
+    private JComboBox<String> customerCombo;
     private JTable table;
     private DefaultTableModel tableModel;
 
@@ -37,18 +40,32 @@ public class MealCalendarPanel extends JPanel {
             loadData(week);
         });
         topPanel.add(weekCombo);
+
+        // 客户选择（用于推荐）
+        topPanel.add(new JLabel("   选择客户:"));
+        customerCombo = new JComboBox<>();
+        // 加载所有客户
+        customerService.findAllCustomers().forEach(c ->
+                customerCombo.addItem(c.getId() + " - " + c.getCustomerName()));
+        topPanel.add(customerCombo);
+
+        JButton recommendBtn = new JButton("按喜好推荐");
+        recommendBtn.addActionListener(e -> showRecommendation());
+        topPanel.add(recommendBtn);
+
         JButton refreshBtn = new JButton("刷新");
         refreshBtn.addActionListener(e -> {
             String week = (String) weekCombo.getSelectedItem();
             loadData(week);
         });
         topPanel.add(refreshBtn);
+
         add(topPanel, BorderLayout.NORTH);
 
-        String[] cols = {"餐次", "食品ID", "食品名称", "口味", "操作"};
+        String[] cols = {"餐次", "食品ID", "食品名称", "口味", "编辑", "删除"};
         tableModel = new DefaultTableModel(cols, 0) {
             @Override
-            public boolean isCellEditable(int row, int col) { return col == 4; }
+            public boolean isCellEditable(int row, int col) { return col == 4 || col == 5; }
         };
         table = new JTable(tableModel);
         TableUtils.styleTable(table);
@@ -78,6 +95,33 @@ public class MealCalendarPanel extends JPanel {
                     m.getTaste() == null ? "" : m.getTaste(), "编辑", "删除"
             });
         }
+        TableUtils.autoResizeColumns(table);
+    }
+
+    private void showRecommendation() {
+        String selected = (String) customerCombo.getSelectedItem();
+        if (selected == null) {
+            UIUtils.showError(this, "请选择客户");
+            return;
+        }
+        Integer customerId = Integer.parseInt(selected.split(" - ")[0]);
+        String week = (String) weekCombo.getSelectedItem();
+        // 调用 recommendMealsForCustomer
+        List<Meal> recommended = mealService.recommendMealsForCustomer(customerId, week);
+        if (recommended.isEmpty()) {
+            UIUtils.showInfo(this, "当前没有安排任何餐次");
+            return;
+        }
+        StringBuilder sb = new StringBuilder("推荐餐次（当前安排）：\n");
+        for (Meal m : recommended) {
+            String mealTypeName = m.getMealType() == 1 ? "早餐" : (m.getMealType() == 2 ? "午餐" : "晚餐");
+            sb.append(mealTypeName).append(": ");
+            Food food = mealService.findAllFoods().stream()
+                    .filter(f -> f.getId().equals(m.getFoodId())).findFirst().orElse(null);
+            sb.append(food != null ? food.getFoodName() : "未知");
+            sb.append(" (").append(m.getTaste() != null ? m.getTaste() : "默认口味").append(")\n");
+        }
+        JOptionPane.showMessageDialog(this, sb.toString(), "推荐餐次", JOptionPane.INFORMATION_MESSAGE);
     }
 
     private void addMeal() {
@@ -87,7 +131,6 @@ public class MealCalendarPanel extends JPanel {
                 JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         if (typeIndex < 0) return;
         int mealType = typeIndex + 1;
-        // 选择食品
         List<Food> foods = mealService.findAllFoods();
         String[] foodNames = foods.stream().map(f -> f.getId() + " - " + f.getFoodName()).toArray(String[]::new);
         String selected = (String) JOptionPane.showInputDialog(this, "选择食品", "食品",

@@ -60,7 +60,7 @@ public class HousekeeperPanel extends JPanel {
         // 右侧：客户列表
         JPanel rightPanel = new JPanel(new BorderLayout());
         rightPanel.setBorder(BorderFactory.createTitledBorder("客户列表"));
-        String[] customerCols = {"ID", "姓名", "当前管家ID", "管家姓名", "操作"};
+        String[] customerCols = {"ID", "姓名", "当前管家ID", "管家姓名", "分配","移除"};
         customerModel = new DefaultTableModel(customerCols, 0) {
             @Override
             public boolean isCellEditable(int row, int col) {
@@ -129,9 +129,8 @@ public class HousekeeperPanel extends JPanel {
     }
 
     private void assignHousekeeper(ActionEvent e) {
-        int row = Integer.parseInt(e.getActionCommand());
-        Integer customerId = (Integer) customerModel.getValueAt(row, 0);
-        AssignHousekeeperDialog dialog = new AssignHousekeeperDialog(SwingUtilities.getWindowAncestor(this), housekeeperService, customerId);
+        // 不再传入 customerId
+        AssignHousekeeperDialog dialog = new AssignHousekeeperDialog(SwingUtilities.getWindowAncestor(this), housekeeperService);
         dialog.setVisible(true);
         if (dialog.isSuccess()) loadData();
     }

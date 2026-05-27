@@ -12,6 +12,7 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class CustomerPanel extends JPanel {
     private CustomerService customerService = new CustomerService();
@@ -19,6 +20,7 @@ public class CustomerPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+    private JComboBox<String> typeCombo;
 
     public CustomerPanel() {
         setLayout(new BorderLayout());
@@ -33,6 +35,12 @@ public class CustomerPanel extends JPanel {
         searchPanel.add(new JLabel("客户姓名："));
         searchField = new JTextField(15);
         searchPanel.add(searchField);
+
+        // 老人类型筛选
+        searchPanel.add(new JLabel("  老人类型："));
+        typeCombo = new JComboBox<>(new String[]{"全部", "自理老人", "护理老人"});
+        searchPanel.add(typeCombo);
+
         JButton searchBtn = new JButton("查询");
         JButton refreshBtn = new JButton("刷新");
         searchPanel.add(searchBtn);
@@ -49,7 +57,6 @@ public class CustomerPanel extends JPanel {
         };
         table = new JTable(tableModel);
         TableUtils.styleTable(table);
-        // 添加操作按钮列（编辑和删除放在一起或分开，这里用一个按钮打开操作菜单）
         new ButtonColumn(table, "操作", 11, this::onAction);
         JScrollPane scrollPane = new JScrollPane(table);
         add(scrollPane, BorderLayout.CENTER);
@@ -70,7 +77,7 @@ public class CustomerPanel extends JPanel {
 
         // 事件绑定
         searchBtn.addActionListener(e -> search());
-        refreshBtn.addActionListener(e -> loadData());
+        refreshBtn.addActionListener(e -> refresh());
         registerBtn.addActionListener(e -> showRegisterDialog());
         modifyBtn.addActionListener(e -> modifyCustomer());
         deleteBtn.addActionListener(e -> deleteCustomer());
@@ -79,17 +86,43 @@ public class CustomerPanel extends JPanel {
     }
 
     private void loadData() {
-        loadData(null);
+        loadData(null, "全部");
     }
 
     private void search() {
         String kw = searchField.getText().trim();
-        loadData(kw.isEmpty() ? null : kw);
+        String type = (String) typeCombo.getSelectedItem();
+        loadData(kw.isEmpty() ? null : kw, type);
     }
 
-    private void loadData(String keyword) {
+    private void refresh() {
+        searchField.setText("");
+        typeCombo.setSelectedIndex(0);
+        loadData(null, "全部");
+    }
+
+    private void loadData(String keyword, String type) {
         tableModel.setRowCount(0);
-        List<Customer> list = (keyword == null) ? customerService.findAllCustomers() : customerService.findCustomersByName(keyword);
+        List<Customer> list;
+        if (keyword == null) {
+            list = customerService.findAllCustomers();
+        } else {
+            list = customerService.findCustomersByName(keyword);
+        }
+        // 根据老人类型筛选（调用 Service 方法）
+        if ("自理老人".equals(type)) {
+            list = customerService.findCustomersByType("自理老人");
+            // 如果上面方法返回全部后过滤，也可以直接调用 Service
+        } else if ("护理老人".equals(type)) {
+            list = customerService.findCustomersByType("护理老人");
+        }
+        // 注意：Service 的 findCustomersByType 已经返回筛选后的列表，但为了同时支持姓名过滤，
+        // 如果姓名关键字存在，需要在筛选结果上再次过滤（因为 Service 方法没有组合查询）
+        if (keyword != null && !keyword.isEmpty()) {
+            list = list.stream()
+                    .filter(c -> c.getCustomerName() != null && c.getCustomerName().contains(keyword))
+                    .collect(Collectors.toList());
+        }
         for (Customer c : list) {
             String sex = (c.getCustomerSex() != null && c.getCustomerSex() == 1) ? "女" : "男";
             tableModel.addRow(new Object[]{
@@ -104,7 +137,6 @@ public class CustomerPanel extends JPanel {
     private void onAction(ActionEvent e) {
         int row = Integer.parseInt(e.getActionCommand());
         Integer id = (Integer) tableModel.getValueAt(row, 0);
-        // 弹出操作菜单：编辑、删除
         JPopupMenu popup = new JPopupMenu();
         JMenuItem editItem = new JMenuItem("编辑");
         JMenuItem deleteItem = new JMenuItem("删除");
@@ -119,7 +151,7 @@ public class CustomerPanel extends JPanel {
     private void showRegisterDialog() {
         RegisterDialog dialog = new RegisterDialog(SwingUtilities.getWindowAncestor(this), bedService);
         dialog.setVisible(true);
-        if (dialog.isSuccess()) loadData();
+        if (dialog.isSuccess()) refresh();
     }
 
     private void modifyCustomer() {
@@ -135,7 +167,7 @@ public class CustomerPanel extends JPanel {
     private void showModifyDialog(Integer customerId) {
         ModifyCustomerDialog dialog = new ModifyCustomerDialog(SwingUtilities.getWindowAncestor(this), customerId);
         dialog.setVisible(true);
-        if (dialog.isSuccess()) loadData();
+        if (dialog.isSuccess()) refresh();
     }
 
     private void deleteCustomer() {
@@ -152,8 +184,8 @@ public class CustomerPanel extends JPanel {
         if (UIUtils.confirm(this, "确定删除客户吗？")) {
             boolean success = customerService.deleteCustomer(id);
             if (success) {
-                loadData();
                 UIUtils.showInfo(this, "删除成功");
+                refresh();
             } else {
                 UIUtils.showError(this, "删除失败");
             }
@@ -163,12 +195,12 @@ public class CustomerPanel extends JPanel {
     private void auditOutward() {
         AuditOutwardDialog dialog = new AuditOutwardDialog(SwingUtilities.getWindowAncestor(this));
         dialog.setVisible(true);
-        loadData();
+        refresh();
     }
 
     private void auditBackdown() {
         AuditBackdownDialog dialog = new AuditBackdownDialog(SwingUtilities.getWindowAncestor(this));
         dialog.setVisible(true);
-        loadData();
+        refresh();
     }
 }

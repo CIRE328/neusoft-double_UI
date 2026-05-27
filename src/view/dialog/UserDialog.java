@@ -13,15 +13,35 @@ public class UserDialog extends JDialog {
 
     private JTextField nicknameField, usernameField, phoneField, emailField;
     private JComboBox<String> sexCombo, roleCombo;
+    private JPasswordField passwordField;   // 新增密码字段
+    private JButton okBtn;
 
     public UserDialog(Window owner, UserService userService, User user) {
         super(owner, user == null ? "新增用户" : "编辑用户", ModalityType.APPLICATION_MODAL);
         this.userService = userService;
         this.user = user;
-        setSize(400, 300);
+        setSize(450, 380);  // 高度增加以容纳密码行
         setLocationRelativeTo(owner);
         initUI();
-        if (user != null) loadData();
+        if (user != null) {
+            loadData();
+            // 管理员只读
+            if (user.getRoleId() == 1) {
+                nicknameField.setEditable(false);
+                usernameField.setEditable(false);
+                phoneField.setEditable(false);
+                emailField.setEditable(false);
+                sexCombo.setEnabled(false);
+                roleCombo.setEnabled(false);
+                passwordField.setEnabled(false);
+                okBtn.setEnabled(false);
+                setTitle("查看管理员信息");
+            }
+        }
+        if (user == null) {
+            roleCombo.setSelectedIndex(0);
+            roleCombo.setEnabled(false);
+        }
     }
 
     private void initUI() {
@@ -36,10 +56,11 @@ public class UserDialog extends JDialog {
         addRow("手机号:", phoneField = new JTextField(15), gbc, row++);
         addRow("邮箱:", emailField = new JTextField(15), gbc, row++);
         addRow("性别:", sexCombo = new JComboBox<>(new String[]{"男", "女"}), gbc, row++);
-        addRow("角色:", roleCombo = new JComboBox<>(new String[]{"管理员", "健康管家"}), gbc, row++);
+        addRow("角色:", roleCombo = new JComboBox<>(new String[]{"健康管家"}), gbc, row++);
+        addRow("密码:", passwordField = new JPasswordField(15), gbc, row++);
 
         JPanel btnPanel = new JPanel();
-        JButton okBtn = new JButton("保存");
+        okBtn = new JButton("保存");
         JButton cancelBtn = new JButton("取消");
         btnPanel.add(okBtn);
         btnPanel.add(cancelBtn);
@@ -62,8 +83,11 @@ public class UserDialog extends JDialog {
         usernameField.setText(user.getUsername());
         phoneField.setText(user.getPhoneNumber());
         emailField.setText(user.getEmail());
-        sexCombo.setSelectedIndex(user.getSex() == 1 ? 0 : 1);
-        roleCombo.setSelectedIndex(user.getRoleId() == 1 ? 0 : 1);
+        sexCombo.setSelectedItem(user.getSex() == 1 ? "男" : "女");
+        // 角色下拉框只有一个选项，无需设置索引
+        if (user.getPassword() != null) {
+            passwordField.setText(user.getPassword());
+        }
     }
 
     private void save() {
@@ -74,7 +98,22 @@ public class UserDialog extends JDialog {
             user.setPhoneNumber(phoneField.getText().trim());
             user.setEmail(emailField.getText().trim());
             user.setSex(sexCombo.getSelectedIndex() == 0 ? 1 : 0);
-            user.setRoleId(roleCombo.getSelectedIndex() == 0 ? 1 : 2);
+            user.setRoleId(2);  // 固定为健康管家（因为下拉框只有这个选项）
+
+            // 处理密码
+            String newPassword = new String(passwordField.getPassword());
+            if (!newPassword.isEmpty()) {
+                user.setPassword(newPassword);
+            } else if (user.getId() == null) {
+                // 新增时若密码为空，使用默认规则（手机号后6位）
+                if (user.getPhoneNumber() != null && user.getPhoneNumber().length() >= 6) {
+                    user.setPassword(user.getPhoneNumber().substring(user.getPhoneNumber().length() - 6));
+                } else {
+                    user.setPassword("123456");
+                }
+            }
+            // 编辑时如果密码框为空，保持原密码不变（不执行 setPassword，保持旧值）
+
             if (user.getId() == null) {
                 User added = userService.addUser(user);
                 if (added == null) {
@@ -82,6 +121,11 @@ public class UserDialog extends JDialog {
                     return;
                 }
             } else {
+                // 编辑时再次检查是否是管理员（防止绕过界面）
+                if (user.getRoleId() == 1) {
+                    UIUtils.showError(this, "不能修改管理员信息");
+                    return;
+                }
                 userService.updateUser(user);
             }
             success = true;

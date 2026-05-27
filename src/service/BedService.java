@@ -62,7 +62,10 @@ public class BedService {
         Bed newBed = optNewBed.get();
 
         bedDetailsDao.findAll().stream()
-                .filter(d -> d.getCustomerId().equals(customerId) && d.getBedId().equals(oldBedId) && d.getEndDate() == null)
+                .filter(d -> d.getCustomerId() != null
+                        && d.getCustomerId().equals(customerId)
+                        && d.getBedId().equals(oldBedId)
+                        && d.getEndDate() == null)
                 .forEach(d -> {
                     d.setEndDate(DateUtils.now());
                     bedDetailsDao.update(d);
@@ -131,5 +134,13 @@ public class BedService {
                 .map(BedDetails::getCustomerId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    public List<String> getAllFloors() {
+        return roomDao.findAll().stream()
+                .map(Room::getRoomFloor)
+                .distinct()
+                .sorted()
+                .collect(Collectors.toList());
     }
 }
