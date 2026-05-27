@@ -2,6 +2,8 @@ package dao;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -82,7 +84,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         List<String> assignments = new ArrayList<>();
         for (Map.Entry<String, Field> entry : columnToFieldMap.entrySet()) {
             String column = entry.getKey();
-            if (column.equals(idColumn) || "is_deleted".equals(column)) continue; // 更新时排除 is_deleted
+            if (column.equals(idColumn) || "is_deleted".equals(column)) continue;
             assignments.add(column + " = ?");
         }
         return "UPDATE " + tableName + " SET " + String.join(", ", assignments) +
@@ -116,8 +118,16 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                         Field field = entry.getValue();
                         Object value = rs.getObject(column);
                         if (value != null) {
-                            if (field.getType() == java.util.Date.class && value instanceof Timestamp) {
-                                field.set(entity, value);
+                            if (field.getType() == java.util.Date.class) {
+                                if (value instanceof Timestamp) {
+                                    field.set(entity, value);
+                                } else if (value instanceof LocalDateTime) {
+                                    // 处理 MySQL 驱动返回 LocalDateTime 的情况
+                                    java.util.Date date = java.util.Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
+                                    field.set(entity, date);
+                                } else {
+                                    field.set(entity, value);
+                                }
                             } else {
                                 field.set(entity, value);
                             }
@@ -213,7 +223,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
 
     @Override
     public T insert(T entity) {
-        setDefaultValues(entity); // 设置默认值
+        setDefaultValues(entity);
         String sql = getInsertSql();
         List<String> insertColumns = columnToFieldMap.keySet().stream()
                 .filter(col -> !col.equals(idColumn))

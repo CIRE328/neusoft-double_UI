@@ -15,12 +15,4 @@ public class AuthService {
         }
         return null;
     }
-
-    public boolean isAdmin(User user) {
-        return user != null && user.getRoleId() != null && user.getRoleId() == 1;
-    }
-
-    public boolean isHousekeeper(User user) {
-        return user != null && user.getRoleId() != null && user.getRoleId() == 2;
-    }
 }

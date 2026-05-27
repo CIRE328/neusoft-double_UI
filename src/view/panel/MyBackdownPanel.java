@@ -3,18 +3,15 @@ package view.panel;
 import pojo.BackDown;
 import pojo.Customer;
 import service.CustomerService;
-import service.HousekeeperService;
 import view.util.TableUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
-import java.util.stream.Collectors;
 
 public class MyBackdownPanel extends JPanel {
-    private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
-    private Integer housekeeperId;
+    private Integer housekeeperId;  // 保留构造参数，但不用于过滤
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> statusCombo;
@@ -46,13 +43,8 @@ public class MyBackdownPanel extends JPanel {
 
     private void loadData() {
         tableModel.setRowCount(0);
-        List<Integer> customerIds = housekeeperService.findCustomersByHousekeeper(housekeeperId)
-                .stream().map(Customer::getId).collect(Collectors.toList());
-        if (customerIds.isEmpty()) return;
-
-        List<BackDown> backdowns = customerService.findAllBackdowns().stream()
-                .filter(b -> customerIds.contains(b.getCustomerId()))
-                .collect(Collectors.toList());
+        // 获取所有退住申请，不再根据管家服务客户过滤
+        List<BackDown> backdowns = customerService.findAllBackdowns();
 
         String statusFilter = (String) statusCombo.getSelectedItem();
         for (BackDown b : backdowns) {
@@ -62,8 +54,9 @@ public class MyBackdownPanel extends JPanel {
             else status = "已拒绝";
             if (!"全部".equals(statusFilter) && !status.equals(statusFilter)) continue;
 
+            // 获取客户姓名，如果客户已被删除则显示“已删除客户”
             String customerName = customerService.findCustomerById(b.getCustomerId())
-                    .map(Customer::getCustomerName).orElse("未知");
+                    .map(Customer::getCustomerName).orElse("已删除客户");
             String type = b.getRetreattype() == 0 ? "正常退住" : (b.getRetreattype() == 1 ? "死亡退住" : "保留床位");
             tableModel.addRow(new Object[]{
                     b.getId(), customerName, type, b.getRetreatmentreason(),

@@ -36,7 +36,12 @@ public class MyCustomersPanel extends JPanel {
         add(searchPanel, BorderLayout.NORTH);
 
         String[] cols = {"ID", "姓名", "年龄", "性别", "联系电话", "房间号", "护理级别"};
-        tableModel = new DefaultTableModel(cols, 0);
+        tableModel = new DefaultTableModel(cols, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // 禁止编辑所有单元格
+            }
+        };
         table = new JTable(tableModel);
         TableUtils.styleTable(table);
         add(new JScrollPane(table), BorderLayout.CENTER);
@@ -45,6 +50,7 @@ public class MyCustomersPanel extends JPanel {
         refreshBtn.addActionListener(e -> loadData());
     }
 
+    // 其余方法保持不变...
     private void loadData() {
         loadData(null);
     }
