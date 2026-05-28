@@ -2,7 +2,6 @@ package view.dialog;
 
 import pojo.Outward;
 import service.CustomerService;
-import view.util.UIUtils;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;

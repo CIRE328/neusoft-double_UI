@@ -4,7 +4,6 @@ import dao.RoomDao;
 import pojo.Bed;
 import pojo.BedDetails;
 import pojo.Customer;
-import pojo.Room;
 import service.BedService;
 import service.CustomerService;
 import view.component.ButtonColumn;
@@ -17,7 +16,6 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class BedPanel extends JPanel {
     private BedService bedService = new BedService();

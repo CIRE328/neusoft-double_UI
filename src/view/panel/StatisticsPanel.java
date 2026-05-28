@@ -4,11 +4,9 @@ import service.BedService;
 import service.CustomerService;
 import service.NurseService;
 import service.StatisticsService;
-import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Map;
 
 public class StatisticsPanel extends JPanel {
