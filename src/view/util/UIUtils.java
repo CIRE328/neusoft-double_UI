@@ -1,7 +1,6 @@
 package view.util;
 
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.BorderFactory;
 import java.awt.*;

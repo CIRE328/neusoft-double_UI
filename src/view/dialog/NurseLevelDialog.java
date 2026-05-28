@@ -2,7 +2,6 @@ package view.dialog;
 
 import pojo.NurseLevel;
 import service.NurseService;
-import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 

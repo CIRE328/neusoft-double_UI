@@ -104,12 +104,13 @@ public class UserPanel extends JPanel {
 
     private void loadAdminData(String keyword) {
         adminModel.setRowCount(0);
-        List<User> admins = userService.findUsersByRole(1);
+        List<User> admins;
         if (keyword != null && !keyword.isEmpty()) {
-            admins = admins.stream()
-                    .filter(u -> (u.getNickname() != null && u.getNickname().contains(keyword))
-                            || (u.getUsername() != null && u.getUsername().contains(keyword)))
+            admins = userService.findUsersByName(keyword).stream()
+                    .filter(u -> u.getRoleId() == 1)
                     .collect(Collectors.toList());
+        } else {
+            admins = userService.findUsersByRole(1);
         }
         for (User u : admins) {
             String sex = u.getSex() == 1 ? "男" : "女";
@@ -123,12 +124,13 @@ public class UserPanel extends JPanel {
 
     private void loadNurseData(String keyword) {
         nurseModel.setRowCount(0);
-        List<User> nurses = userService.findUsersByRole(2);
+        List<User> nurses;
         if (keyword != null && !keyword.isEmpty()) {
-            nurses = nurses.stream()
-                    .filter(u -> (u.getNickname() != null && u.getNickname().contains(keyword))
-                            || (u.getUsername() != null && u.getUsername().contains(keyword)))
+            nurses = userService.findUsersByName(keyword).stream()
+                    .filter(u -> u.getRoleId() == 2)
                     .collect(Collectors.toList());
+        } else {
+            nurses = userService.findUsersByRole(2);
         }
         for (User u : nurses) {
             String sex = u.getSex() == 1 ? "男" : "女";

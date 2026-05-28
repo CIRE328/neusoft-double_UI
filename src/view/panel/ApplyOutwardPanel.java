@@ -1,6 +1,5 @@
 package view.panel;
 
-import pojo.Customer;
 import pojo.Outward;
 import service.CustomerService;
 import service.HousekeeperService;
@@ -8,7 +7,6 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 
 public class ApplyOutwardPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
