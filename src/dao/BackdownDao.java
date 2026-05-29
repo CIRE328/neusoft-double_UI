@@ -6,7 +6,7 @@ import java.util.List;
 /**
  * 退住申请数据访问对象
  * 健康管家可以为自己服务的客户提供退住申请
- * 继承自BaseDaoImpl，提供退住申请相关的数据库操作方法
+ * 继承自BaseDaoImpl，提供退住申请相关的数据库操作方法1
  */
 
 public class BackdownDao extends BaseDaoImpl<BackDown, Integer> {
