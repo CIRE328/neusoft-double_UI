@@ -46,7 +46,7 @@ public interface BaseDao<T, ID> {
     /**
      * 根据ID软删除记录（逻辑删除）
      * @param id 主键ID
-     * @return 删除成功返回true，否则返回false1
+     * @return 删除成功返回true，否则返回false
      */
 
     boolean deleteById(ID id);
