@@ -168,10 +168,14 @@ public class NurseService {
     }
 
     public List<NurseRecord> getNurseRecordsByCustomer(Integer customerId) {
+        if (customerId == null) {
+            return nurseRecordDao.findAll(); // 返回所有未删除的记录
+        }
         return nurseRecordDao.findAll().stream()
                 .filter(r -> r.getCustomerId().equals(customerId))
                 .collect(Collectors.toList());
     }
+
     public boolean deleteNurseRecord(Integer recordId) {
         return nurseRecordDao.deleteById(recordId);
     }
