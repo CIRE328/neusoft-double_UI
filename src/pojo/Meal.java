@@ -1,11 +1,19 @@
 package pojo;
 
+/**
+ * 膳食安排实体类
+ * 对应数据库表 meal，记录每周各餐次的菜品配置
+ */
+
 public class Meal {
     private Integer id;
     private String weekDay;
+    /** 食品ID，关联 food 表 */
     private Integer foodId;
+    /** 餐次类型：1-早餐，2-午餐，3-晚餐 */
     private Integer mealType;
     private String taste;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
 
     public Meal() {}

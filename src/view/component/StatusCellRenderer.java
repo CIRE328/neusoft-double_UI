@@ -4,7 +4,18 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 
+/**
+ * 状态单元格渲染器
+ * 根据状态文字（如空闲、启用、待审核等）以不同颜色显示表格单元格
+ */
+
 public class StatusCellRenderer extends DefaultTableCellRenderer {
+
+    /**
+     * 渲染表格单元格，按状态值设置前景色
+     *
+     * @return 渲染后的组件
+     */
 
     @Override
     public Component getTableCellRendererComponent(JTable table, Object value,

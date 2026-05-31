@@ -1,3 +1,4 @@
+<!-- CheckoutApply：退住申请，为服务客户提交退住申请 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchCustomers" clearable />
@@ -30,6 +31,10 @@
 </template>
 
 <script setup>
+/**
+ * 退住申请组件
+ * 为当前管家负责的客户填写退住类型、原因与时间，提交退住申请待管理员审核
+ */
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import request from '../../utils/request'
@@ -43,6 +48,7 @@ const currentCustomer = ref(null)
 const submitting = ref(false)
 const form = ref({ retreattype: 1, retreatmentreason: '', retreatment: new Date() })
 
+/** 加载当前管家负责的客户列表 */
 const searchCustomers = async () => {
   try {
     const userId = store.state.user?.id
@@ -55,18 +61,21 @@ const searchCustomers = async () => {
   }
 }
 
+/** 打开退住申请对话框 */
 const applyCheckout = (customer) => {
   currentCustomer.value = customer
   form.value = { retreattype: 1, retreatmentreason: '', retreatment: new Date() }
   applyDialog.value = true
 }
 
+/** 将日期格式化为 yyyy-MM-dd */
 const formatDate = (date) => {
   if (!date) return null
   const d = new Date(date)
   return `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-${d.getDate().toString().padStart(2,'0')}`
 }
 
+/** 提交退住申请 */
 const submitApply = async () => {
   if (!form.value.retreatmentreason) {
     ElMessage.warning('请填写退住原因')

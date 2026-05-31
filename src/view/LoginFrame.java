@@ -6,10 +6,20 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 登录窗口
+ * 提供用户名密码登录，根据角色跳转至管理员或健康管家主界面
+ */
+
 public class LoginFrame extends JFrame {
     private AuthService authService = new AuthService();
     private JTextField usernameField;
     private JPasswordField passwordField;
+
+    /**
+     * 构造函数
+     * 初始化登录界面布局与事件绑定
+     */
 
     public LoginFrame() {
         setTitle("东软颐养中心 - 登录");

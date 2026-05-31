@@ -6,8 +6,19 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.BorderLayout;
 
+/**
+ * 健康管家主窗口
+ * 提供我的客户、日常护理、护理记录、外出/退住申请及申请列表等功能选项卡
+ */
+
 public class HousekeeperFrame extends JFrame {
     private User currentUser;
+
+    /**
+     * 构造函数
+     *
+     * @param user 当前登录的健康管家用户
+     */
 
     public HousekeeperFrame(User user) {
         this.currentUser = user;

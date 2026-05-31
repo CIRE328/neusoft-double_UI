@@ -1,3 +1,7 @@
+/**
+ * 路由配置模块
+ * 定义登录、管理员、健康管家等页面路由，并在导航前校验登录状态与角色权限
+ */
 import { createRouter, createWebHistory } from 'vue-router'
 import store from '../store'
 
@@ -43,6 +47,7 @@ const router = createRouter({
     routes
 })
 
+/** 全局路由守卫：校验登录状态与角色权限 */
 router.beforeEach((to, from, next) => {
     const user = store.state.user
     if (to.path === '/login') return next()

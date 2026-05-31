@@ -1,3 +1,4 @@
+<!-- Assign：设置服务对象，为健康管家分配服务客户 -->
 <template>
   <div>
     <el-form :inline="true">
@@ -31,6 +32,10 @@
 </template>
 
 <script setup>
+/**
+ * 设置服务对象组件
+ * 查询健康管家及其服务客户，并为管家分配未绑定的客户
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'
@@ -42,6 +47,7 @@ const customerSearch = ref('')
 const freeCustomers = ref([])
 const currentHousekeeper = ref(null)
 
+/** 查询管家列表并加载各管家的服务客户 */
 const searchHousekeepers = async () => {
   const res = await request.get('/housekeeper/list', { params: { name: hkName.value } })
   // 获取每个管家的服务客户
@@ -51,20 +57,27 @@ const searchHousekeepers = async () => {
   }
   housekeepers.value = res.data
 }
+
+/** 打开添加客户对话框 */
 const addCustomer = (hk) => {
   currentHousekeeper.value = hk
   customerDialog.value = true
   searchFreeCustomers()
 }
+
+/** 查询尚未分配管家的客户 */
 const searchFreeCustomers = async () => {
   const res = await request.get('/customer/without-housekeeper', { params: { name: customerSearch.value } })
   freeCustomers.value = res.data
 }
+
+/** 将客户分配给当前管家 */
 const assign = async (customer) => {
   await request.post('/housekeeper/assign', { customerId: customer.id, housekeeperId: currentHousekeeper.value.id })
   ElMessage.success('分配成功')
   customerDialog.value = false
   searchHousekeepers()
 }
+
 onMounted(() => searchHousekeepers())
 </script>

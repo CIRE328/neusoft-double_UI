@@ -1,3 +1,4 @@
+<!-- LevelManage：护理级别管理，维护级别及关联护理项目 -->
 <template>
   <div>
     <el-button type="primary" @click="addLevel">新增级别</el-button>
@@ -31,6 +32,10 @@
 </template>
 
 <script setup>
+/**
+ * 护理级别管理组件
+ * 维护护理级别列表，支持启用/停用及为级别配置关联护理项目
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'
@@ -44,18 +49,27 @@ const addItemId = ref(null)
 const addDialog = ref(false)
 const newLevelName = ref('')
 
+/** 加载护理级别列表 */
 const loadLevels = async () => { const res = await request.get('/nurse/level/list'); levels.value = res.data }
+
+/** 打开新增级别对话框 */
 const addLevel = () => { addDialog.value = true }
+
+/** 提交新增护理级别 */
 const doAddLevel = async () => {
   await request.post('/nurse/level', { levelName: newLevelName.value, levelStatus: 1 })
   ElMessage.success('添加成功')
   addDialog.value = false
   loadLevels()
 }
+
+/** 更新级别启用/停用状态 */
 const updateStatus = async (row) => {
   await request.put('/nurse/level', row)
   ElMessage.success('更新成功')
 }
+
+/** 打开配置项目对话框，加载级别已关联项目 */
 const configItems = async (row) => {
   currentLevelId.value = row.id
   const res = await request.get('/nurse/level/items', { params: { levelId: row.id } })
@@ -64,10 +78,14 @@ const configItems = async (row) => {
   allItems.value = all.data.filter(i => i.status === 1)
   configDialog.value = true
 }
+
+/** 从当前级别移除护理项目 */
 const removeItem = async (item) => {
   await request.delete('/nurse/level/item', { params: { levelId: currentLevelId.value, itemId: item.id } })
   selectedItems.value = selectedItems.value.filter(i => i.id !== item.id)
 }
+
+/** 向当前级别添加护理项目 */
 const addToLevel = async () => {
   if (!addItemId.value) return
   await request.post('/nurse/level/item', { levelId: currentLevelId.value, itemId: addItemId.value })
@@ -75,5 +93,6 @@ const addToLevel = async () => {
   selectedItems.value.push(added)
   addItemId.value = null
 }
+
 onMounted(() => loadLevels())
 </script>

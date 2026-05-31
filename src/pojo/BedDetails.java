@@ -2,13 +2,21 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 床位使用明细实体类
+ * 对应数据库表 beddetails，记录客户与床位的入住起止时间及详情
+ */
+
 public class BedDetails {
     private Integer id;
     private Date startDate;
     private Date endDate;
     private String bedDetails;
+    /** 客户ID，关联 customer 表 */
     private Integer customerId;
+    /** 床位ID，关联 bed 表 */
     private Integer bedId;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
 
     public BedDetails() {}

@@ -9,6 +9,11 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.Map;
 
+/**
+ * 统计信息面板
+ * 展示床位、客户、护理记录概览及客户详情与最近护理记录
+ */
+
 public class StatisticsPanel extends JPanel {
     private StatisticsService statisticsService = new StatisticsService();
     private BedService bedService = new BedService();
@@ -17,6 +22,11 @@ public class StatisticsPanel extends JPanel {
 
     private JLabel bedStatsLabel, customerStatsLabel, recordStatsLabel;
     private JTextArea customerDetailArea, nurseRecordArea;
+
+    /**
+     * 构造函数
+     * 初始化统计界面并加载数据
+     */
 
     public StatisticsPanel() {
         setLayout(new BorderLayout());

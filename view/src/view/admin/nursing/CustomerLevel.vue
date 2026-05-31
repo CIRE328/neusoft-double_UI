@@ -1,3 +1,4 @@
+<!-- CustomerLevel：客户护理设置，为客户配置或移除护理级别 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchCustomers" clearable />
@@ -28,6 +29,10 @@
 </template>
 
 <script setup>
+/**
+ * 客户护理设置组件
+ * 查询客户当前护理级别，支持设置或移除护理级别
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -39,6 +44,7 @@ const levelDialog = ref(false)
 const selectedLevelId = ref(null)
 const currentCustomer = ref(null)
 
+/** 查询客户列表并附加护理级别名称 */
 const searchCustomers = async () => {
   const res = await request.get('/customer/list', { params: { name: searchName.value } })
   // 附加 levelName
@@ -46,21 +52,29 @@ const searchCustomers = async () => {
   const levelMap = new Map(levelRes.data.map(l => [l.id, l.levelName]))
   customers.value = res.data.map(c => ({ ...c, levelName: levelMap.get(c.levelId) || '无' }))
 }
+
+/** 加载启用的护理级别列表 */
 const loadLevels = async () => {
   const res = await request.get('/nurse/level/list')
   levels.value = res.data.filter(l => l.levelStatus === 1)
 }
+
+/** 打开设置护理级别对话框 */
 const openSetLevel = (customer) => {
   currentCustomer.value = customer
   selectedLevelId.value = null
   levelDialog.value = true
 }
+
+/** 提交为客户设置护理级别 */
 const confirmSetLevel = async () => {
   await request.post('/customer/set-level', { customerId: currentCustomer.value.id, levelId: selectedLevelId.value })
   ElMessage.success('设置成功')
   levelDialog.value = false
   searchCustomers()
 }
+
+/** 移除客户护理级别（同时移除关联护理项目） */
 const removeLevel = (customer) => {
   ElMessageBox.confirm('移除级别将同时移除该客户所有关联的护理项目，确定吗？', '提示').then(async () => {
     await request.post('/customer/remove-level', { customerId: customer.id })
@@ -68,5 +82,6 @@ const removeLevel = (customer) => {
     searchCustomers()
   })
 }
+
 onMounted(() => { searchCustomers(); loadLevels() })
 </script>

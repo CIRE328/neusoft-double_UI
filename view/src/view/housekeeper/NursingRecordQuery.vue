@@ -1,3 +1,4 @@
+<!-- NursingRecordQuery：护理记录查询，查看与删除客户护理记录 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchCustomers" clearable />
@@ -25,6 +26,10 @@
 </template>
 
 <script setup>
+/**
+ * 护理记录查询组件
+ * 查询服务客户列表，查看指定客户的护理记录并支持删除
+ */
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import request from '../../utils/request'
@@ -37,6 +42,7 @@ const recordDialog = ref(false)
 const records = ref([])
 const currentCustomer = ref(null)
 
+/** 加载当前管家负责的客户列表 */
 const searchCustomers = async () => {
   try {
     const userId = store.state.user?.id
@@ -49,6 +55,7 @@ const searchCustomers = async () => {
   }
 }
 
+/** 查看指定客户的护理记录 */
 const viewRecords = async (customer) => {
   currentCustomer.value = customer
   try {
@@ -60,6 +67,7 @@ const viewRecords = async (customer) => {
   }
 }
 
+/** 删除指定护理记录 */
 const deleteRecord = (row) => {
   ElMessageBox.confirm('删除记录不可恢复，确定吗？', '提示').then(async () => {
     try {

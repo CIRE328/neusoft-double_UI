@@ -12,11 +12,22 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 护理项目管理面板
+ * 维护护理项目的增删改查，支持按名称搜索
+ */
+
 public class NurseItemPanel extends JPanel {
     private NurseService nurseService;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     *
+     * @param nurseService 护理服务
+     */
 
     public NurseItemPanel(NurseService nurseService) {
         this.nurseService = nurseService;

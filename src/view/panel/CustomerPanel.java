@@ -14,6 +14,11 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 客户管理面板
+ * 管理员维护客户信息，支持入住登记、修改、删除及外出/退住审核
+ */
+
 public class CustomerPanel extends JPanel {
     private CustomerService customerService = new CustomerService();
     private BedService bedService = new BedService();
@@ -21,6 +26,11 @@ public class CustomerPanel extends JPanel {
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private JComboBox<String> typeCombo;
+
+    /**
+     * 构造函数
+     * 初始化客户管理界面并加载数据
+     */
 
     public CustomerPanel() {
         setLayout(new BorderLayout());

@@ -1,3 +1,4 @@
+<!-- login：用户登录页 -->
 <template>
   <div class="login-container">
     <el-card class="login-card">
@@ -16,6 +17,10 @@
 </template>
 
 <script setup>
+/**
+ * 登录页组件
+ * 校验用户名密码，登录成功后按角色跳转至管理员或健康管家工作台
+ */
 import { reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
@@ -31,6 +36,7 @@ const rules = {
 const formRef = ref(null)
 const loading = ref(false)
 
+/** 提交登录表单，成功后按角色跳转 */
 const handleLogin = async () => {
   if (!formRef.value) return
   await formRef.value.validate()

@@ -2,14 +2,23 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 退住申请实体类
+ * 对应数据库表 backdown，记录客户退住事由、类型及审批信息
+ */
+
 public class BackDown {
     private Integer id;
     private String remarks;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
+    /** 客户ID，关联 customer 表 */
     private Integer customerId;
     private Date retreatment;
+    /** 退住类型：0-正常退住，1-死亡退住，2-保留床位 */
     private Integer retreattype;
     private String retreatmentreason;
+    /** 审批状态：0-待审核，1-已通过，2-已拒绝 */
     private Integer auditstatus;
     private String auditperson;
     private Date audittime;

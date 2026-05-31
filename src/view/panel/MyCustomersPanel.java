@@ -9,6 +9,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * 我的客户面板
+ * 健康管家查看所负责客户的基本信息，支持按姓名查询
+ */
+
 public class MyCustomersPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
@@ -16,6 +21,12 @@ public class MyCustomersPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public MyCustomersPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

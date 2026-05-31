@@ -1,4 +1,8 @@
-
+/**
+ * REST API 服务端
+ * 基于 JDK 内置 HttpServer 提供 HTTP 接口，供 Vue Web 前端调用；
+ * 封装认证、客户、床位、护理、健康管家及用户管理等业务端点
+ */
 
 import com.sun.net.httpserver.HttpServer;
 import com.sun.net.httpserver.HttpHandler;
@@ -17,6 +21,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class ApiServer {
+
     private static final Gson gson = new Gson();
     private static final AuthService authService = new AuthService();
     private static final CustomerService customerService = new CustomerService();
@@ -24,6 +29,13 @@ public class ApiServer {
     private static final NurseService nurseService = new NurseService();
     private static final HousekeeperService housekeeperService = new HousekeeperService();
     private static final UserService userService = new UserService();
+
+    /**
+     * 启动 HTTP 服务，监听 8080 端口并注册全部 API 路由
+     *
+     * @param args 命令行参数（未使用）
+     * @throws IOException 创建或启动服务器失败时抛出
+     */
 
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -848,11 +860,27 @@ public class ApiServer {
     }
 
     // ---------- 工具方法 ----------
+
+    /**
+     * 读取 HTTP 请求体为字符串
+     *
+     * @param exchange HTTP 交换对象
+     * @return 请求体文本
+     * @throws IOException 读取失败时抛出
+     */
+
     private static String readBody(HttpExchange exchange) throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
             return br.lines().collect(Collectors.joining());
         }
     }
+
+    /**
+     * 解析 URL 查询字符串为键值对
+     *
+     * @param query 查询字符串（不含 ?）
+     * @return 参数 Map，query 为 null 时返回空 Map
+     */
 
     private static Map<String, String> getQueryParams(String query) {
         Map<String, String> params = new HashMap<>();
@@ -863,6 +891,15 @@ public class ApiServer {
         }
         return params;
     }
+
+    /**
+     * 发送 JSON 响应并设置 CORS 头
+     *
+     * @param exchange   HTTP 交换对象
+     * @param statusCode HTTP 状态码
+     * @param response   响应 JSON 字符串
+     * @throws IOException 写入响应失败时抛出
+     */
 
     private static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json;charset=UTF-8");
@@ -880,6 +917,14 @@ public class ApiServer {
         }
     }
 
+    /**
+     * 发送成功响应（code=200，data 为业务数据）
+     *
+     * @param exchange HTTP 交换对象
+     * @param data     业务数据对象
+     * @throws IOException 写入响应失败时抛出
+     */
+
     private static void sendSuccess(HttpExchange exchange, Object data) throws IOException {
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -887,9 +932,26 @@ public class ApiServer {
         sendResponse(exchange, 200, gson.toJson(result));
     }
 
+    /**
+     * 发送错误响应
+     *
+     * @param exchange HTTP 交换对象
+     * @param code     错误码
+     * @param message  错误信息
+     * @throws IOException 写入响应失败时抛出
+     */
+
     private static void sendError(HttpExchange exchange, int code, String message) throws IOException {
         sendResponse(exchange, code, error(code, message));
     }
+
+    /**
+     * 构造标准错误 JSON 字符串
+     *
+     * @param code    错误码
+     * @param message 错误信息
+     * @return JSON 格式错误字符串
+     */
 
     private static String error(int code, String message) {
         return String.format("{\"code\":%d,\"message\":\"%s\"}", code, message);

@@ -1,3 +1,4 @@
+<!-- AdminLayout：管理员后台布局框架 -->
 <template>
   <el-container class="layout">
     <el-aside width="220px">
@@ -41,11 +42,17 @@
 </template>
 
 <script setup>
+/**
+ * 管理员布局组件
+ * 提供侧边导航菜单与顶部栏，嵌套渲染各管理子页面
+ */
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 const router = useRouter()
 const store = useStore()
+
+/** 退出登录并跳转至登录页 */
 const logout = () => {
   store.dispatch('logout')
   router.push('/login')

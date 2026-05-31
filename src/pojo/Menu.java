@@ -1,11 +1,17 @@
 package pojo;
 
+/**
+ * 菜单实体类
+ * 对应数据库表 menu，定义系统导航菜单及层级结构
+ */
+
 public class Menu {
     private Integer id;
     private String menusIndex;
     private String title;
     private String icon;
     private String path;
+    /** 父菜单ID，顶级菜单为 null 或 0 */
     private Integer parentId;
 
     public Menu() {}

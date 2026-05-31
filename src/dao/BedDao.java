@@ -10,6 +10,11 @@ import java.util.List;
 
 public class BedDao extends BaseDaoImpl<Bed, Integer> {
 
+    /**
+     * 构造函数
+     * 初始化床位 DAO，指定表名、主键列名、实体类类型，不使用逻辑删除
+     */
+
     public BedDao() {
         super("bed", "id", Bed.class, false);
     }

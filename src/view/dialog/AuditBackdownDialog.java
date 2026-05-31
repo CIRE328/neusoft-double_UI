@@ -8,11 +8,23 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 退住申请审核对话框
+ * 管理员查看退住申请列表并进行通过或拒绝审核
+ */
+
 public class AuditBackdownDialog extends JDialog {
     private CustomerService customerService = new CustomerService();
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     * 初始化审核界面、加载数据并显示对话框
+     *
+     * @param owner 父窗口
+     */
 
     public AuditBackdownDialog(Window owner) {
         super(owner, "退住申请审核", ModalityType.APPLICATION_MODAL);

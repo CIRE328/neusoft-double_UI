@@ -12,11 +12,25 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 护理级别项目配置对话框
+ * 左右分栏管理某护理级别已配置与可添加的护理项目
+ */
+
 public class NurseLevelItemDialog extends JDialog {
     private NurseService nurseService;
     private Integer levelId;
     private JTable assignedTable, availableTable;
     private DefaultTableModel assignedModel, availableModel;
+
+    /**
+     * 构造函数
+     * 初始化项目配置界面、加载数据并显示对话框
+     *
+     * @param owner        父窗口
+     * @param nurseService 护理服务
+     * @param levelId      护理级别 ID
+     */
 
     public NurseLevelItemDialog(Window owner, NurseService nurseService, Integer levelId) {
         super(owner, "配置护理级别项目", ModalityType.APPLICATION_MODAL);

@@ -2,6 +2,11 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 系统用户实体类
+ * 对应数据库表 user，存储登录账号、个人信息及角色关联
+ */
+
 public class User {
     // 对应数据库字段：id
     private Integer id;
@@ -14,6 +19,7 @@ public class User {
     // update_by
     private Integer updateBy;
     // is_deleted
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
     // nickname
     private String nickname;
@@ -22,12 +28,14 @@ public class User {
     // password
     private String password;
     // sex
+    /** 性别：1-男，2-女 */
     private Integer sex;
     // email
     private String email;
     // phone_number
     private String phoneNumber;
     // role_id
+    /** 角色ID，关联 role 表 */
     private Integer roleId;
 
     public User() {}

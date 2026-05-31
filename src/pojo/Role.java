@@ -2,11 +2,17 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 角色实体类
+ * 对应数据库表 role，定义系统用户的权限角色
+ */
+
 public class Role {
     private Integer id;
     private Date createTime;
     private Date updateTime;
     private Integer updateBy;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
     private String name;
 

@@ -6,6 +6,11 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 用户编辑对话框
+ * 用于新增或编辑健康管家用户信息，管理员信息为只读
+ */
+
 public class UserDialog extends JDialog {
     private UserService userService;
     private User user;
@@ -15,6 +20,14 @@ public class UserDialog extends JDialog {
     private JComboBox<String> sexCombo, roleCombo;
     private JPasswordField passwordField;   // 新增密码字段
     private JButton okBtn;
+
+    /**
+     * 构造函数
+     *
+     * @param owner       父窗口
+     * @param userService 用户服务
+     * @param user        待编辑的用户，为 null 时表示新增健康管家
+     */
 
     public UserDialog(Window owner, UserService userService, User user) {
         super(owner, user == null ? "新增用户" : "编辑用户", ModalityType.APPLICATION_MODAL);
@@ -134,6 +147,12 @@ public class UserDialog extends JDialog {
             UIUtils.showError(this, "保存失败: " + ex.getMessage());
         }
     }
+
+    /**
+     * 判断保存是否成功
+     *
+     * @return 保存是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

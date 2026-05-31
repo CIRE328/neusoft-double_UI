@@ -9,12 +9,23 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * 退住申请列表面板
+ * 展示所有退住申请记录，支持按审批状态筛选
+ */
+
 public class MyBackdownPanel extends JPanel {
     private CustomerService customerService = new CustomerService();
     private Integer housekeeperId;  // 保留构造参数，但不用于过滤
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> statusCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID（保留参数，列表展示全部申请）
+     */
 
     public MyBackdownPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

@@ -2,11 +2,17 @@ package pojo;
 
 import java.math.BigDecimal;
 
+/**
+ * 食品实体类
+ * 对应数据库表 food，存储菜品名称、类型、价格等基础信息
+ */
+
 public class Food {
     private Integer id;
     private String foodName;
     private String foodType;
     private BigDecimal price;
+    /** 是否清真：0-否，1-是 */
     private Integer isHalal;
     private String foodImg;
 

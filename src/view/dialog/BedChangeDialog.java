@@ -7,11 +7,25 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * 床位调换对话框
+ * 为指定客户选择空闲床位并完成调换操作
+ */
+
 public class BedChangeDialog extends JDialog {
     private BedService bedService = new BedService();
     private Integer customerId;
     private Integer oldBedId;
     private JComboBox<String> newBedCombo;
+
+    /**
+     * 构造函数
+     * 加载可用空闲床位并显示对话框
+     *
+     * @param owner      父窗口
+     * @param customerId 客户 ID
+     * @param oldBedId   当前床位 ID
+     */
 
     public BedChangeDialog(Window owner, Integer customerId, Integer oldBedId) {
         super(owner, "床位调换", ModalityType.APPLICATION_MODAL);

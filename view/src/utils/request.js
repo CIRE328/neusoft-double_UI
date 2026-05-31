@@ -1,3 +1,7 @@
+/**
+ * HTTP 请求封装模块
+ * 基于 axios 创建实例，统一配置 baseURL、请求/响应拦截器及错误提示
+ */
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
@@ -6,6 +10,7 @@ const request = axios.create({
     timeout: 10000
 })
 
+/** 请求拦截：自动附加 Authorization Token */
 request.interceptors.request.use(
     config => {
         const token = localStorage.getItem('token')
@@ -17,6 +22,7 @@ request.interceptors.request.use(
     error => Promise.reject(error)
 )
 
+/** 响应拦截：统一处理业务状态码与网络错误 */
 request.interceptors.response.use(
     response => {
         const res = response.data

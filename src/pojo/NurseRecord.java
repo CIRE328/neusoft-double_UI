@@ -2,14 +2,23 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 护理记录实体类
+ * 对应数据库表 nurserecord，记录客户护理项目的执行明细
+ */
+
 public class NurseRecord {
     private Integer id;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
+    /** 客户ID，关联 customer 表 */
     private Integer customerId;
+    /** 护理项目ID，关联 nursecontent 表 */
     private Integer itemId;
     private Date nursingTime;
     private String nursingContent;
     private Integer nursingCount;
+    /** 执行护理的用户ID，关联 user 表 */
     private Integer userId;
 
     public NurseRecord() {}

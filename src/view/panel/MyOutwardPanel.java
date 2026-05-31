@@ -16,6 +16,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 外出申请列表面板
+ * 健康管家查看所服务客户的外出申请，支持回院登记
+ */
+
 public class MyOutwardPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
@@ -23,6 +28,12 @@ public class MyOutwardPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> statusCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public MyOutwardPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

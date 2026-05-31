@@ -13,11 +13,22 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 护理级别管理面板
+ * 维护护理级别的增删改及关联护理项目配置
+ */
+
 public class NurseLevelPanel extends JPanel {
     private NurseService nurseService;
     private JTable table;
     private DefaultTableModel tableModel;
     private JComboBox<String> statusCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param nurseService 护理服务
+     */
 
     public NurseLevelPanel(NurseService nurseService) {
         this.nurseService = nurseService;

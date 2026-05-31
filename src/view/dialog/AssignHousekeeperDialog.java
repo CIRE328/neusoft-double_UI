@@ -8,6 +8,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * 分配管家对话框
+ * 为无管家的客户选择健康管家并完成分配
+ */
+
 public class AssignHousekeeperDialog extends JDialog {
     private HousekeeperService housekeeperService;
     private boolean success = false;
@@ -15,6 +20,14 @@ public class AssignHousekeeperDialog extends JDialog {
     private JComboBox<String> housekeeperCombo;
     private List<Customer> customersWithoutHousekeeper;
     private List<User> housekeepers;
+
+    /**
+     * 构造函数
+     * 加载无管家客户与管家列表并显示对话框
+     *
+     * @param owner              父窗口
+     * @param housekeeperService 健康管家服务
+     */
 
     public AssignHousekeeperDialog(Window owner, HousekeeperService housekeeperService) {
         super(owner, "分配管家", ModalityType.APPLICATION_MODAL);
@@ -100,6 +113,12 @@ public class AssignHousekeeperDialog extends JDialog {
             UIUtils.showError(this, "分配失败");
         }
     }
+
+    /**
+     * 判断分配是否成功
+     *
+     * @return 分配是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

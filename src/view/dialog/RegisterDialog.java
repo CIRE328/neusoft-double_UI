@@ -10,6 +10,11 @@ import java.awt.*;
 import java.text.SimpleDateFormat;
 import java.util.List;
 
+/**
+ * 入住登记对话框
+ * 填写客户基本信息并选择空闲床位完成入住登记
+ */
+
 public class RegisterDialog extends JDialog {
     private BedService bedService;
     private CustomerService customerService = new CustomerService();
@@ -17,6 +22,13 @@ public class RegisterDialog extends JDialog {
 
     private JTextField nameField, idcardField, phoneField, familyField, birthdayField, checkinField, expireField;
     private JComboBox<String> roomCombo, bedCombo, sexCombo, bloodCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param owner      父窗口
+     * @param bedService 床位服务
+     */
 
     public RegisterDialog(Window owner, BedService bedService) {
         super(owner, "入住登记", ModalityType.APPLICATION_MODAL);
@@ -122,6 +134,12 @@ public class RegisterDialog extends JDialog {
             UIUtils.showError(this, "输入格式错误：" + ex.getMessage());
         }
     }
+
+    /**
+     * 判断登记是否成功
+     *
+     * @return 登记是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

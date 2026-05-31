@@ -6,6 +6,9 @@ import util.DateUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 客户管理服务，负责客户入住、信息维护、外出申请与退住申请及其审核流程。
+ */
 public class CustomerService {
     private final CustomerDao customerDao = new CustomerDao();
     private final BedDao bedDao = new BedDao();
@@ -13,8 +16,19 @@ public class CustomerService {
     private final OutwardDao outwardDao = new OutwardDao();
     private final BackdownDao backdownDao = new BackdownDao();
 
+    /**
+     * 查询所有客户。
+     *
+     * @return 客户列表
+     */
     public List<Customer> findAllCustomers() { return customerDao.findAll(); }
 
+    /**
+     * 按客户姓名关键字模糊查询。
+     *
+     * @param keyword 姓名关键字，为空时返回全部客户
+     * @return 匹配的客户列表
+     */
     public List<Customer> findCustomersByName(String keyword) {
         if (keyword == null || keyword.trim().isEmpty()) return findAllCustomers();
         return customerDao.findAll().stream()
@@ -22,6 +36,12 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 按老人类型筛选客户（自理老人或护理老人）。
+     *
+     * @param type 老人类型（"自理老人"、"护理老人"），其他值返回全部
+     * @return 匹配类型的客户列表
+     */
     public List<Customer> findCustomersByType(String type) {
         if ("自理老人".equals(type)) {
             return customerDao.findAll().stream()
@@ -35,9 +55,21 @@ public class CustomerService {
         return findAllCustomers();
     }
 
+    /**
+     * 根据 ID 查询客户。
+     *
+     * @param id 客户 ID
+     * @return 存在则返回客户，否则为空
+     */
     public Optional<Customer> findCustomerById(Integer id) { return customerDao.findById(id); }
 
-    // ==================== 修改后的 checkin 方法（支持更新已有客户） ====================
+    /**
+     * 办理客户入住，支持新客户登记与已有客户更新入住信息。
+     *
+     * @param customer 客户信息（含入住日期、合同到期日等）
+     * @param bedId    分配的床位 ID
+     * @return 入住成功返回 true，校验失败或床位不可用时返回 false
+     */
     public boolean checkin(Customer customer, Integer bedId) {
         // 1. 校验合同时间
         if (DateUtils.isAfter(customer.getCheckinDate(), customer.getExpirationDate())) {
@@ -102,8 +134,13 @@ public class CustomerService {
 
         return true;
     }
-    // =====================================================================
 
+    /**
+     * 更新客户信息；若合同到期日变更，同步结束当前床位使用记录。
+     *
+     * @param customer 待更新的客户对象
+     * @return 更新成功返回 true，客户不存在时返回 false
+     */
     public boolean updateCustomer(Customer customer) {
         if (customerDao.findById(customer.getId()).isEmpty()) return false;
         Customer old = customerDao.findById(customer.getId()).get();
@@ -120,6 +157,12 @@ public class CustomerService {
         return true;
     }
 
+    /**
+     * 删除客户，释放床位并结束当前床位使用记录。
+     *
+     * @param customerId 客户 ID
+     * @return 删除成功返回 true，客户不存在时返回 false
+     */
     public boolean deleteCustomer(Integer customerId) {
         Optional<Customer> opt = customerDao.findById(customerId);
         if (opt.isEmpty()) return false;
@@ -140,6 +183,12 @@ public class CustomerService {
         return customerDao.deleteById(customerId);
     }
 
+    /**
+     * 提交客户外出申请。
+     *
+     * @param outward 外出申请信息
+     * @return 提交成功返回 true，客户不存在时返回 false
+     */
     public boolean submitOutward(Outward outward) {
         if (customerDao.findById(outward.getCustomerId()).isEmpty()) return false;
         outward.setAuditstatus(0);
@@ -148,8 +197,19 @@ public class CustomerService {
         return true;
     }
 
+    /**
+     * 查询所有外出申请。
+     *
+     * @return 外出申请列表
+     */
     public List<Outward> findAllOutwards() { return outwardDao.findAll(); }
 
+    /**
+     * 按客户姓名关键字查询外出申请。
+     *
+     * @param keyword 客户姓名关键字
+     * @return 匹配的外出申请列表，无匹配客户时返回空列表
+     */
     public List<Outward> findOutwardsByCustomerName(String keyword) {
         List<Customer> customers = findCustomersByName(keyword);
         if (customers.isEmpty()) return List.of();
@@ -159,6 +219,14 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 审核外出申请；通过后床位状态变为外出。
+     *
+     * @param outwardId   外出申请 ID
+     * @param approved    是否通过
+     * @param auditorName 审核人姓名
+     * @return 审核成功返回 true，申请不存在或已审核时返回 false
+     */
     public boolean auditOutward(Integer outwardId, boolean approved, String auditorName) {
         Optional<Outward> opt = outwardDao.findById(outwardId);
         if (opt.isEmpty()) return false;
@@ -181,6 +249,13 @@ public class CustomerService {
         return true;
     }
 
+    /**
+     * 登记客户外出归来，恢复床位为占用状态。
+     *
+     * @param outwardId        外出申请 ID
+     * @param actualReturnTime 实际归来时间
+     * @return 登记成功返回 true，申请不存在或未通过审核时返回 false
+     */
     public boolean returnFromOutward(Integer outwardId, Date actualReturnTime) {
         Optional<Outward> opt = outwardDao.findById(outwardId);
         if (opt.isEmpty()) return false;
@@ -197,6 +272,12 @@ public class CustomerService {
         return true;
     }
 
+    /**
+     * 提交客户退住申请。
+     *
+     * @param backdown 退住申请信息
+     * @return 提交成功返回 true，客户不存在时返回 false
+     */
     public boolean submitBackdown(BackDown backdown) {
         if (customerDao.findById(backdown.getCustomerId()).isEmpty()) return false;
         backdown.setAuditstatus(0);
@@ -205,8 +286,19 @@ public class CustomerService {
         return true;
     }
 
+    /**
+     * 查询所有退住申请。
+     *
+     * @return 退住申请列表
+     */
     public List<BackDown> findAllBackdowns() { return backdownDao.findAll(); }
 
+    /**
+     * 按客户姓名关键字查询退住申请。
+     *
+     * @param keyword 客户姓名关键字
+     * @return 匹配的退住申请列表，无匹配客户时返回空列表
+     */
     public List<BackDown> findBackdownsByCustomerName(String keyword) {
         List<Customer> customers = findCustomersByName(keyword);
         if (customers.isEmpty()) return List.of();
@@ -216,6 +308,14 @@ public class CustomerService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * 审核退住申请；通过后释放床位、结束使用记录并删除客户。
+     *
+     * @param backdownId  退住申请 ID
+     * @param approved    是否通过
+     * @param auditorName 审核人姓名
+     * @return 审核成功返回 true，申请不存在或已审核时返回 false
+     */
     public boolean auditBackdown(Integer backdownId, boolean approved, String auditorName) {
         Optional<BackDown> opt = backdownDao.findById(backdownId);
         if (opt.isEmpty()) return false;

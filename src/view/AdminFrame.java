@@ -5,8 +5,19 @@ import view.panel.*;
 import view.util.UIUtils;
 import javax.swing.*;
 
+/**
+ * 管理员主窗口
+ * 以选项卡形式集成客户、床位、护理、管家、用户、膳食及统计等管理面板
+ */
+
 public class AdminFrame extends JFrame {
     private User currentUser;
+
+    /**
+     * 构造函数
+     *
+     * @param user 当前登录的管理员用户
+     */
 
     public AdminFrame(User user) {
         this.currentUser = user;

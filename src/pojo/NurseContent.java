@@ -1,14 +1,21 @@
 package pojo;
 
+/**
+ * 护理项目实体类
+ * 对应数据库表 nursecontent，定义可提供的护理服务内容及价格
+ */
+
 public class NurseContent {
     private Integer id;
     private String serialNumber;
     private String nursingName;
     private String servicePrice;
     private String message;
+    /** 项目状态：1-启用，2-停用 */
     private Integer status;
     private String executionCycle;
     private String executionTime;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
 
     public NurseContent() {}

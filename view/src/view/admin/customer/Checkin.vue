@@ -1,3 +1,4 @@
+<!-- Checkin：客户入住登记，新增客户并办理入住 -->
 <template>
   <div>
     <!-- 查询表单 -->
@@ -107,6 +108,10 @@
 </template>
 
 <script setup>
+/**
+ * 入住登记组件
+ * 查询客户列表、新增客户信息，并为选定客户分配床位完成入住登记
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'

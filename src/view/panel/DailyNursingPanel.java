@@ -11,6 +11,11 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
 
+/**
+ * 日常护理面板
+ * 健康管家选择客户后查看护理项目并执行护理操作
+ */
+
 public class DailyNursingPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private NurseService nurseService = new NurseService();
@@ -21,6 +26,12 @@ public class DailyNursingPanel extends JPanel {
     private DefaultTableModel itemModel;
     private List<Customer> myCustomers;
     private Integer selectedCustomerId;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public DailyNursingPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

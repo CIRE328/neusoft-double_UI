@@ -1,11 +1,18 @@
 package pojo;
 
+/**
+ * 客户偏好实体类
+ * 对应数据库表 preference，记录客户的饮食偏好、注意事项等
+ */
+
 public class Preference {
     private Integer id;
+    /** 客户ID，关联 customer 表 */
     private Integer customerId;
     private String preferences;
     private String attention;
     private String remark;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
 
     public Preference() {}
