@@ -5,6 +5,7 @@ import pojo.User;
 import util.DateUtils;
 
 import java.util.*;
+import java.util.stream.Collectors;  // 添加这行导入
 
 public class UserService {
     private final UserDao userDao = new UserDao();
@@ -15,14 +16,14 @@ public class UserService {
     public List<User> findUsersByRole(Integer roleId) {
         return userDao.findAll().stream()
                 .filter(u -> u.getRoleId().equals(roleId))
-                .toList();
+                .collect(Collectors.toList());  // 改这里
     }
 
     public List<User> findUsersByName(String keyword) {
         if (keyword == null || keyword.isEmpty()) return findAllUsers();
         return userDao.findAll().stream()
                 .filter(u -> u.getNickname() != null && u.getNickname().contains(keyword))
-                .toList();
+                .collect(Collectors.toList());  // 改这里
     }
 
     public User addUser(User user) {

@@ -11,7 +11,7 @@ public class BedDao extends BaseDaoImpl<Bed, Integer> {
 
     //根据房间号查询床位
     public List<Bed> findByRoomNo(Integer roomNo) {
-        String sql = "SELECT * FROM bed WHERE room_no = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM bed WHERE room_no = ? ";
         return executeQuery(sql, roomNo);
     }
 
@@ -19,7 +19,7 @@ public class BedDao extends BaseDaoImpl<Bed, Integer> {
      *@param status 1空闲 2有人 3外出
      */
     public List<Bed> findByStatus(Integer status) {
-        String sql = "SELECT * FROM bed WHERE bed_status = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM bed WHERE bed_status = ? ";
         return executeQuery(sql, status);
     }
 

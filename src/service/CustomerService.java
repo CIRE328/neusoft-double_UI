@@ -37,36 +37,72 @@ public class CustomerService {
 
     public Optional<Customer> findCustomerById(Integer id) { return customerDao.findById(id); }
 
+    // ==================== 修改后的 checkin 方法（支持更新已有客户） ====================
     public boolean checkin(Customer customer, Integer bedId) {
+        // 1. 校验合同时间
         if (DateUtils.isAfter(customer.getCheckinDate(), customer.getExpirationDate())) {
             System.err.println("合同到期时间不能小于入住时间");
             return false;
         }
+        // 2. 校验床位
         Optional<Bed> optBed = bedDao.findById(bedId);
         if (optBed.isEmpty() || optBed.get().getBedStatus() != 1) {
             System.err.println("床位不存在或不是空闲状态");
             return false;
         }
         Bed bed = optBed.get();
+
+        // 3. 计算年龄
         if (customer.getBirthday() != null) {
             customer.setCustomerAge(DateUtils.calculateAge(customer.getBirthday()));
         }
-        customer.setBuildingNo("001");
-        customer.setBedId(bedId);
-        if (customer.getUserId() == null) customer.setUserId(-1);
-        customer.setIsDeleted(0);
-        Customer saved = customerDao.insert(customer);
+        customer.setBuildingNo("606");   // 楼栋固定
+
+        Customer savedCustomer;
+        // 4. 判断是新增客户还是已有客户办理入住
+        if (customer.getId() == null || customer.getId() <= 0) {
+            // 新客户：插入客户记录
+            if (customer.getUserId() == null) customer.setUserId(-1);
+            customer.setIsDeleted(0);
+            savedCustomer = customerDao.insert(customer);
+        } else {
+            // 已有客户：更新入住信息，不新增记录
+            Optional<Customer> existingOpt = customerDao.findById(customer.getId());
+            if (existingOpt.isEmpty()) {
+                System.err.println("客户不存在");
+                return false;
+            }
+            Customer existing = existingOpt.get();
+            existing.setCheckinDate(customer.getCheckinDate());
+            existing.setExpirationDate(customer.getExpirationDate());
+            existing.setBedId(bedId);
+            existing.setRoomNo(String.valueOf(bed.getRoomNo()));
+            existing.setBuildingNo("606");
+            existing.setCustomerAge(customer.getCustomerAge());
+            existing.setBloodType(customer.getBloodType());
+            existing.setFamilyMember(customer.getFamilyMember());
+            existing.setContactTel(customer.getContactTel());
+            // 注意：不要覆盖原有的 levelId, userId 等其他字段
+            customerDao.update(existing);
+            savedCustomer = existing;
+        }
+
+        // 5. 更新床位状态为有人
         bed.setBedStatus(2);
         bedDao.update(bed);
+
+        // 6. 插入床位使用记录（新记录，结束时间为空）
         BedDetails details = new BedDetails();
         details.setStartDate(customer.getCheckinDate());
         details.setEndDate(null);
-        details.setCustomerId(saved.getId());
+        details.setCustomerId(savedCustomer.getId());
         details.setBedId(bedId);
         details.setIsDeleted(0);
         bedDetailsDao.insert(details);
+
         return true;
     }
+    // =====================================================================
 
     public boolean updateCustomer(Customer customer) {
         if (customerDao.findById(customer.getId()).isEmpty()) return false;
