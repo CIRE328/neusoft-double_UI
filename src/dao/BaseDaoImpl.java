@@ -7,6 +7,14 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 通用 DAO 基础实现类
+ * 提供基本的 CRUD 操作，支持逻辑删除和审计字段自动填充
+ *
+ * @param <T> 实体类型
+ * @param <ID> 主键类型
+ */
+
 public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
 
     private final String tableName;
@@ -19,6 +27,15 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         this(tableName, idColumn, entityClass, true);
     }
 
+    /**
+     * 构造函数
+     *
+     * @param tableName 数据库表名
+     * @param idColumn 主键列名
+     * @param entityClass 实体类类型
+     * @param useLogicDelete 是否使用逻辑删除
+     */
+
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass, boolean useLogicDelete) {
         this.tableName = tableName;
         this.idColumn = idColumn;
@@ -26,6 +43,12 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         this.useLogicDelete = useLogicDelete;
         this.columnToFieldMap = buildColumnFieldMap();
     }
+
+    /**
+     * 构建数据库列名到实体类字段的映射
+     *
+     * @return 列名到字段的映射
+     */
 
     private Map<String, Field> buildColumnFieldMap() {
         Map<String, Field> map = new HashMap<>();
@@ -37,6 +60,13 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
         return map;
     }
+
+    /**
+     * 将驼峰命名转换为下划线命名
+     *
+     * @param str 驼峰命名的字符串
+     * @return 下划线命名的字符串
+     */
 
     private String camelToSnake(String str) {
         if (str == null) return null;
@@ -51,17 +81,36 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return sb.toString();
     }
 
+    /**
+     * 获取根据 ID 查询的 SQL 语句
+     *
+     * @return SQL 语句
+     */
+
     private String getSelectByIdSql() {
         String sql = "SELECT * FROM " + tableName + " WHERE " + idColumn + " = ?";
         if (useLogicDelete) sql += " AND is_deleted = 0";
         return sql;
     }
 
+    /**
+     * 获取查询所有记录的 SQL 语句
+     *
+     * @param includeDeleted 是否包含已删除的记录
+     * @return SQL 语句
+     */
+
     private String getSelectAllSql(boolean includeDeleted) {
         if (!useLogicDelete) return "SELECT * FROM " + tableName;
         if (includeDeleted) return "SELECT * FROM " + tableName;
         else return "SELECT * FROM " + tableName + " WHERE is_deleted = 0";
     }
+
+    /**
+     * 获取插入记录的 SQL 语句
+     *
+     * @return SQL 语句
+     */
 
     private String getInsertSql() {
         List<String> columns = new ArrayList<>();
@@ -80,6 +129,12 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                 ") VALUES (" + String.join(", ", placeholders) + ")";
     }
 
+    /**
+     * 获取更新记录的 SQL 语句
+     *
+     * @return SQL 语句
+     */
+
     private String getUpdateSql() {
         List<String> assignments = new ArrayList<>();
         for (Map.Entry<String, Field> entry : columnToFieldMap.entrySet()) {
@@ -91,12 +146,25 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                 " WHERE " + idColumn + " = ?";
     }
 
+    /**
+     * 获取逻辑删除的 SQL 语句
+     *
+     * @return SQL 语句
+     * @throws UnsupportedOperationException 如果不支持逻辑删除
+     */
+
     private String getLogicDeleteSql() {
         if (!useLogicDelete) {
             throw new UnsupportedOperationException("Table " + tableName + " does not support logical deletion.");
         }
         return "UPDATE " + tableName + " SET is_deleted = 1 WHERE " + idColumn + " = ?";
     }
+
+    /**
+     * 获取物理删除的 SQL 语句
+     *
+     * @return SQL 语句
+     */
 
     private String getForceDeleteSql() {
         return "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
