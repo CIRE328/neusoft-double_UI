@@ -1,9 +1,16 @@
 package pojo;
 
+/**
+ * 护理级别实体类
+ * 对应数据库表 nurselevel，定义客户的护理等级及启用状态
+ */
+
 public class NurseLevel {
     private Integer id;
     private String levelName;
+    /** 级别状态：1-启用，2-停用 */
     private Integer levelStatus;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
 
     public NurseLevel() {}

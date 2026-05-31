@@ -1,3 +1,4 @@
+<!-- DailyNursing：日常护理，为服务客户执行护理项目并记录 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="loadCustomers" clearable />
@@ -35,6 +36,10 @@
 </template>
 
 <script setup>
+/**
+ * 日常护理组件
+ * 展示当前管家负责的客户列表，选择护理项目并提交护理执行记录
+ */
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import request from '../../utils/request'
@@ -50,6 +55,7 @@ const selectedItemId = ref(null)
 const nursingCount = ref(1)
 const submitting = ref(false)
 
+/** 加载当前管家负责的客户列表 */
 const loadCustomers = async () => {
   try {
     const userId = store.state.user?.id
@@ -66,6 +72,7 @@ const loadCustomers = async () => {
   }
 }
 
+/** 打开护理执行对话框，加载客户可用护理项目 */
 const openNursing = async (customer) => {
   currentCustomer.value = customer
   try {
@@ -84,6 +91,7 @@ const openNursing = async (customer) => {
   }
 }
 
+/** 提交护理执行记录 */
 const submitNursing = async () => {
   if (!selectedItemId.value) {
     ElMessage.warning('请选择护理项目')

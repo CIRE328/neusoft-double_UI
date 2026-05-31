@@ -1,3 +1,4 @@
+<!-- ItemManage：护理项目管理，增删改查护理项目 -->
 <template>
   <div>
     <el-form :inline="true">
@@ -50,6 +51,10 @@
 </template>
 
 <script setup>
+/**
+ * 护理项目管理组件
+ * 支持按名称和状态查询护理项目，并提供新增、编辑、删除功能
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -61,20 +66,27 @@ const dialogVisible = ref(false)
 const form = ref({})
 const isEdit = ref(false)
 
+/** 按条件查询护理项目列表 */
 const searchItems = async () => {
   const res = await request.get('/nurse/item/list', { params: { name: searchName.value, status: searchStatus.value } })
   items.value = res.data
 }
+
+/** 打开新增项目对话框 */
 const openAddDialog = () => {
   isEdit.value = false
   form.value = { status: 1 }
   dialogVisible.value = true
 }
+
+/** 打开编辑项目对话框 */
 const editItem = (row) => {
   isEdit.value = true
   form.value = { ...row }
   dialogVisible.value = true
 }
+
+/** 保存护理项目（新增或更新） */
 const saveItem = async () => {
   if (isEdit.value) {
     await request.put('/nurse/item', form.value)
@@ -85,6 +97,8 @@ const saveItem = async () => {
   dialogVisible.value = false
   searchItems()
 }
+
+/** 删除护理项目 */
 const deleteItem = (row) => {
   ElMessageBox.confirm('确定删除该项目吗？', '提示').then(async () => {
     await request.delete('/nurse/item', { params: { id: row.id } })
@@ -92,5 +106,6 @@ const deleteItem = (row) => {
     searchItems()
   })
 }
+
 onMounted(() => searchItems())
 </script>

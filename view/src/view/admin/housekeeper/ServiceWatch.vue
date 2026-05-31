@@ -1,3 +1,4 @@
+<!-- ServiceWatch：服务关注，管理客户已购护理服务 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchCustomers" clearable />
@@ -49,6 +50,10 @@
 </template>
 
 <script setup>
+/**
+ * 服务关注组件
+ * 查看客户已购护理服务状态，支持添加、续费与移除服务
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -64,6 +69,7 @@ const renewItemData = ref(null)
 const renewCount = ref(1)
 const newMaturity = ref(null)
 
+/** 查询客户及其已购服务，并计算服务状态标签 */
 const searchCustomers = async () => {
   const res = await request.get('/customer/list', { params: { name: searchName.value } })
   for (let c of res.data) {
@@ -81,17 +87,24 @@ const searchCustomers = async () => {
   }
   customers.value = res.data
 }
+
+/** 打开服务管理对话框 */
 const manageService = (customer) => {
   currentCustomer.value = customer
   serviceDialog.value = true
   loadAvailableItems(customer.id)
 }
+
+/** 加载客户尚未拥有的可用护理项目 */
 const loadAvailableItems = async (customerId) => {
   const all = await request.get('/nurse/item/list', { params: { status: '1' } })
   const ownedIds = currentCustomer.value.items.map(i => i.itemId)
   availableItems.value = all.data.filter(i => !ownedIds.includes(i.id))
 }
+
 const onAddItemSelect = () => {}
+
+/** 为客户添加新护理服务 */
 const addService = async () => {
   await request.post('/customer/purchase-item', {
     customerId: currentCustomer.value.id,
@@ -103,12 +116,16 @@ const addService = async () => {
   serviceDialog.value = false
   searchCustomers()
 }
+
+/** 打开续费对话框 */
 const renewItem = (item) => {
   renewItemData.value = item
   renewCount.value = 1
   newMaturity.value = null
   renewDialog.value = true
 }
+
+/** 提交服务续费 */
 const doRenew = async () => {
   await request.post('/customer/renew-item', {
     customerNurseItemId: renewItemData.value.id,
@@ -120,6 +137,8 @@ const doRenew = async () => {
   serviceDialog.value = false
   searchCustomers()
 }
+
+/** 移除客户某项护理服务 */
 const removeItem = (item) => {
   ElMessageBox.confirm('确定移除该服务吗？', '提示').then(async () => {
     await request.delete('/customer/item', { params: { id: item.id } })
@@ -128,5 +147,6 @@ const removeItem = (item) => {
     searchCustomers()
   })
 }
+
 onMounted(() => searchCustomers())
 </script>

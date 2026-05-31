@@ -1,3 +1,4 @@
+<!-- HousekeeperLayout：健康管家工作台布局框架 -->
 <template>
   <el-container class="layout">
     <el-aside width="200px">
@@ -19,11 +20,17 @@
 </template>
 
 <script setup>
+/**
+ * 健康管家布局组件
+ * 提供侧边导航与顶部栏，嵌套渲染管家日常业务子页面
+ */
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 
 const router = useRouter()
 const store = useStore()
+
+/** 退出登录并跳转至登录页 */
 const logout = () => {
   store.dispatch('logout')
   router.push('/login')

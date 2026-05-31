@@ -1,8 +1,15 @@
 package pojo;
 
+/**
+ * 护理级别项目关联实体类
+ * 对应数据库表 nurselevelitem，维护护理级别与护理项目的对应关系
+ */
+
 public class NurseLevelItem {
     private Integer id;
+    /** 护理级别ID，关联 nurselevel 表 */
     private Integer levelId;
+    /** 护理项目ID，关联 nursecontent 表 */
     private Integer itemId;
 
     public NurseLevelItem() {}

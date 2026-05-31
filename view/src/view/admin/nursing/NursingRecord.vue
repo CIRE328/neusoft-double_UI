@@ -1,3 +1,4 @@
+<!-- NursingRecord：护理记录管理，查询与删除护理记录 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchRecords" clearable />
@@ -17,6 +18,10 @@
 </template>
 
 <script setup>
+/**
+ * 护理记录管理组件
+ * 按客户姓名查询全部护理记录，并支持删除记录
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -24,10 +29,13 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 const searchName = ref('')
 const records = ref([])
 
+/** 按客户姓名查询护理记录 */
 const searchRecords = async () => {
   const res = await request.get('/nurse/record/list', { params: { name: searchName.value } })
   records.value = res.data
 }
+
+/** 删除指定护理记录 */
 const deleteRecord = (row) => {
   ElMessageBox.confirm('删除记录不可恢复，确定吗？', '提示').then(async () => {
     await request.delete('/nurse/record', { params: { id: row.id } })
@@ -35,5 +43,6 @@ const deleteRecord = (row) => {
     searchRecords()
   })
 }
+
 onMounted(() => searchRecords())
 </script>

@@ -1,5 +1,10 @@
 package pojo;
 
+/**
+ * 房间实体类
+ * 对应数据库表 room，存储楼层与房间号信息
+ */
+
 public class Room {
     private Integer id;
     private String roomFloor;

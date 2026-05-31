@@ -2,11 +2,18 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 客户实体类
+ * 对应数据库表 customer，存储养老院入住客户的基本信息、健康资料及护理分配
+ */
+
 public class Customer {
     private Integer id;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
     private String customerName;
     private Integer customerAge;
+    /** 性别：0-男，1-女 */
     private Integer customerSex;
     private String idcard;
     private String roomNo;
@@ -22,7 +29,9 @@ public class Customer {
     private String weight;
     private String bloodType;
     private String filepath;
+    /** 健康管家（用户）ID */
     private Integer userId;
+    /** 护理级别ID */
     private Integer levelId;
     private String familyMember;
 

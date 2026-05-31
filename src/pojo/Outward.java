@@ -2,10 +2,17 @@ package pojo;
 
 import java.util.Date;
 
+/**
+ * 外出申请实体类
+ * 对应数据库表 outward，记录客户外出事由、时间及审批信息
+ */
+
 public class Outward {
     private Integer id;
     private String remarks;
+    /** 逻辑删除标志：0-未删除，1-已删除 */
     private Integer isDeleted;
+    /** 客户ID，关联 customer 表 */
     private Integer customerId;
     private String outgoingreasons;
     private Date outgoingtime;
@@ -14,6 +21,7 @@ public class Outward {
     private String escorted;
     private String relation;
     private String escortedtel;
+    /** 审批状态：0-待审核，1-已通过，2-已拒绝 */
     private Integer auditstatus;
     private String auditperson;
     private Date audittime;

@@ -1,3 +1,4 @@
+<!-- BedManage：床位管理，查询使用详情与调换床位 -->
 <template>
   <div>
     <!-- 查询表单 -->
@@ -63,6 +64,10 @@
 </template>
 
 <script setup>
+/**
+ * 床位管理组件
+ * 支持按条件查询床位使用详情，并为在住客户办理床位调换
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'

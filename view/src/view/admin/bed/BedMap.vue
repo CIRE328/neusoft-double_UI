@@ -1,3 +1,4 @@
+<!-- BedMap：床位示意图，按楼层展示各房间床位状态 -->
 <template>
   <div>
     <div>总床位数: {{ stats.total }}  空闲: {{ stats.free }}  有人: {{ stats.occupied }}  外出: {{ stats.outward }}</div>
@@ -17,6 +18,10 @@
 </template>
 
 <script setup>
+/**
+ * 床位示意图组件
+ * 展示床位统计概览，并按楼层/房间可视化各床位使用状态
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 
@@ -24,13 +29,21 @@ const stats = ref({ total: 0, free: 0, occupied: 0, outward: 0 })
 const activeFloor = ref('1')
 const roomsWithBeds = ref([])
 
+/** 加载床位统计数据 */
 const loadStats = async () => { const res = await request.get('/bed/statistics'); stats.value = res.data }
+
+/** 加载指定楼层的房间及床位信息 */
 const loadFloorData = async () => {
   const res = await request.get('/bed/rooms', { params: { floor: activeFloor.value } })
   roomsWithBeds.value = res.data
 }
+
+/** 根据状态码返回 CSS 类名 */
 const statusClass = (s) => ({ 1: 'free', 2: 'occupied', 3: 'outward' }[s])
+
+/** 根据状态码返回中文描述 */
 const statusText = (s) => ({ 1: '空闲', 2: '有人', 3: '外出' }[s])
+
 onMounted(() => { loadStats(); loadFloorData() })
 </script>
 

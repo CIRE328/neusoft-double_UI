@@ -1,3 +1,4 @@
+<!-- UserManage：用户管理，管理系统用户账号 -->
 <template>
   <div>
     <el-form :inline="true">
@@ -40,6 +41,10 @@
 </template>
 
 <script setup>
+/**
+ * 用户管理组件
+ * 查询系统用户，支持新增用户、重置密码与删除用户
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -49,26 +54,35 @@ const users = ref([])
 const addDialog = ref(false)
 const form = ref({ username: '', nickname: '', phoneNumber: '', roleId: 2 })
 
+/** 按姓名查询用户列表 */
 const searchUsers = async () => {
   const res = await request.get('/user/list', { params: { name: searchName.value } })
   users.value = res.data
 }
+
+/** 打开新增用户对话框 */
 const openAddDialog = () => {
   form.value = { username: '', nickname: '', phoneNumber: '', roleId: 2 }
   addDialog.value = true
 }
+
+/** 提交新增用户 */
 const doAdd = async () => {
   await request.post('/user', form.value)
   ElMessage.success('添加成功')
   addDialog.value = false
   searchUsers()
 }
+
+/** 重置用户密码为手机号后6位 */
 const resetPwd = (user) => {
   ElMessageBox.confirm(`重置密码为手机号后6位（${user.phoneNumber?.slice(-6)}），确定吗？`, '提示').then(async () => {
     await request.post('/user/reset-password', { id: user.id })
     ElMessage.success('密码已重置')
   })
 }
+
+/** 删除用户 */
 const deleteUser = (user) => {
   ElMessageBox.confirm('删除用户不可恢复，确定吗？', '提示').then(async () => {
     await request.delete('/user', { params: { id: user.id } })
@@ -76,5 +90,6 @@ const deleteUser = (user) => {
     searchUsers()
   })
 }
+
 onMounted(() => searchUsers())
 </script>

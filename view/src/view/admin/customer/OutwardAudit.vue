@@ -1,3 +1,4 @@
+<!-- OutwardAudit：外出登记审核，审核外出申请并登记回院 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchList" clearable />
@@ -33,6 +34,10 @@
 </template>
 
 <script setup>
+/**
+ * 外出登记审核组件
+ * 审核外出申请，并为已通过且未回院的客户登记实际回院时间
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'
@@ -43,20 +48,27 @@ const returnDialogVisible = ref(false)
 const currentOutward = ref(null)
 const actualReturnTime = ref(null)
 
+/** 按客户姓名查询外出申请列表 */
 const searchList = async () => {
   const res = await request.get('/outward/list', { params: { name: searchName.value } })
   outwardList.value = res.data
 }
+
+/** 审核外出申请 */
 const audit = async (row, approved) => {
   await request.post('/outward/audit', { id: row.id, approved })
   ElMessage.success('审核完成')
   searchList()
 }
+
+/** 打开回院登记对话框 */
 const openReturnDialog = (row) => {
   currentOutward.value = row
   actualReturnTime.value = null
   returnDialogVisible.value = true
 }
+
+/** 提交实际回院时间 */
 const confirmReturn = async () => {
   if (!actualReturnTime.value) {
     ElMessage.warning('请选择回院时间')
@@ -67,5 +79,6 @@ const confirmReturn = async () => {
   returnDialogVisible.value = false
   searchList()
 }
+
 onMounted(() => searchList())
 </script>

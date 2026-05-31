@@ -1,3 +1,4 @@
+<!-- Checkout：退住登记审核，审核健康管家提交的退住申请 -->
 <template>
   <div>
     <el-input v-model="searchName" placeholder="客户姓名" style="width:200px" @input="searchList" clearable />
@@ -21,6 +22,10 @@
 </template>
 
 <script setup>
+/**
+ * 退住登记组件
+ * 查询退住申请列表，并对待审核申请进行通过/不通过操作
+ */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
 import { ElMessage } from 'element-plus'
@@ -28,14 +33,18 @@ import { ElMessage } from 'element-plus'
 const searchName = ref('')
 const backdownList = ref([])
 
+/** 按客户姓名查询退住申请列表 */
 const searchList = async () => {
   const res = await request.get('/backdown/list', { params: { name: searchName.value } })
   backdownList.value = res.data
 }
+
+/** 审核退住申请 */
 const audit = async (row, approved) => {
   await request.post('/backdown/audit', { id: row.id, approved })
   ElMessage.success('审核完成')
   searchList()
 }
+
 onMounted(() => searchList())
 </script>
