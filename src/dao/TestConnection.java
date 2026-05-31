@@ -6,7 +6,7 @@ import java.sql.DriverManager;
 
 public class TestConnection {
     public static void main(String[] args) {
-        String url = "jdbc:mysql://localhost:3306/neu?useSSL=false&serverTimezone=UTC";
+        String url = "jdbc:mysql://localhost:3306/neu?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true";
         String user = "root";
         String password = "Hly207724";
         try (Connection conn = DriverManager.getConnection(url, user, password)) {
