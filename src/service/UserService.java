@@ -116,4 +116,29 @@ public class UserService {
     public boolean deleteUser(Integer userId) {
         return userDao.deleteById(userId);
     }
+
+    // 初始化三个默认管理员（若不存在）
+    public void initAdmins() {
+        String[] adminNames = {"admin", "admin1", "admin2"};
+        for (String name : adminNames) {
+            if (userDao.findAll().stream().noneMatch(u -> u.getUsername().equals(name))) {
+                User admin = new User();
+                admin.setUsername(name);
+                admin.setPassword(name);          // 密码与用户名相同
+                admin.setNickname("系统管理员");
+                admin.setPhoneNumber("13800000000");
+                admin.setEmail("admin@example.com");
+                admin.setSex(1);
+                admin.setRoleId(1);               // 管理员
+                admin.setCreateTime(new Date());
+                admin.setUpdateTime(new Date());
+                admin.setCreateBy(1);
+                admin.setUpdateBy(1);
+                admin.setIsDeleted(0);
+                userDao.insert(admin);
+                System.out.println("默认管理员已创建: " + name);
+            }
+        }
+    }
 }
+
