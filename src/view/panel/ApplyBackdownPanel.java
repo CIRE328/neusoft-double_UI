@@ -8,12 +8,23 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 
+/**
+ * 退住申请面板
+ * 健康管家为所服务客户填写并提交退住申请
+ */
+
 public class ApplyBackdownPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
     private Integer housekeeperId;
     private JComboBox<String> customerCombo, typeCombo;
     private JTextField reasonField, backdownTimeField;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public ApplyBackdownPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

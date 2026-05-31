@@ -5,12 +5,25 @@ import service.NurseService;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 护理级别编辑对话框
+ * 用于新增或编辑护理级别的名称与状态
+ */
+
 public class NurseLevelDialog extends JDialog {
     private NurseService nurseService;
     private NurseLevel level;
     private boolean success = false;
     private JTextField nameField;
     private JComboBox<String> statusCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param owner        父窗口
+     * @param nurseService 护理服务
+     * @param level        待编辑的护理级别，为 null 时表示新增
+     */
 
     public NurseLevelDialog(Window owner, NurseService nurseService, NurseLevel level) {
         super(owner, level == null ? "新增护理级别" : "编辑护理级别", ModalityType.APPLICATION_MODAL);
@@ -55,6 +68,12 @@ public class NurseLevelDialog extends JDialog {
         success = true;
         dispose();
     }
+
+    /**
+     * 判断保存是否成功
+     *
+     * @return 保存是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

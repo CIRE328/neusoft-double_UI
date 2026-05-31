@@ -12,12 +12,23 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 护理记录面板
+ * 健康管家查看并管理自己提交的护理记录，支持删除
+ */
+
 public class NurseRecordPanel extends JPanel {
     private NurseService nurseService = new NurseService();
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
     private Integer housekeeperId;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public NurseRecordPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

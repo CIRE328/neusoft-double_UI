@@ -7,11 +7,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
-/**
- * 数据访问对象测试类
- * 用于测试所有数据访问对象的数据库操作
- */
-
 public class DAOTest {
 
     public static void main(String[] args) {

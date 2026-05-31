@@ -17,6 +17,11 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 床位管理面板
+ * 展示床位列表与统计信息，支持床位调换、示意图查看及使用详情查询
+ */
+
 public class BedPanel extends JPanel {
     private BedService bedService = new BedService();
     private RoomDao roomDao = new RoomDao();
@@ -24,6 +29,11 @@ public class BedPanel extends JPanel {
     private JTable table;
     private DefaultTableModel tableModel;
     private JLabel statsLabel;
+
+    /**
+     * 构造函数
+     * 初始化床位管理界面并加载数据
+     */
 
     public BedPanel() {
         setLayout(new BorderLayout());

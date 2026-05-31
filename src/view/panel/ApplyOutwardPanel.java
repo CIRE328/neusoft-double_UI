@@ -8,12 +8,23 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 
+/**
+ * 外出申请面板
+ * 健康管家为所服务客户填写并提交外出申请
+ */
+
 public class ApplyOutwardPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
     private Integer housekeeperId;
     private JComboBox<String> customerCombo;
     private JTextField reasonField, outgoingTimeField, returnTimeField, escortedField, relationField, telField;
+
+    /**
+     * 构造函数
+     *
+     * @param housekeeperId 当前健康管家 ID
+     */
 
     public ApplyOutwardPanel(Integer housekeeperId) {
         this.housekeeperId = housekeeperId;

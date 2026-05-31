@@ -6,7 +6,19 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 应用程序启动入口
+ * 初始化 FlatLaf 外观、全局字体，创建默认管理员并显示登录窗口
+ */
+
 public class Launcher {
+
+    /**
+     * 程序主入口
+     *
+     * @param args 命令行参数
+     */
+
     public static void main(String[] args) {
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());

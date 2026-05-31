@@ -13,11 +13,21 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 用户管理面板
+ * 分上下两区展示管理员（只读）与健康管家（可增删改、重置密码）列表
+ */
+
 public class UserPanel extends JPanel {
     private UserService userService = new UserService();
     private JTable adminTable, nurseTable;
     private DefaultTableModel adminModel, nurseModel;
     private JTextField adminSearchField, nurseSearchField;
+
+    /**
+     * 构造函数
+     * 初始化用户管理界面并加载数据
+     */
 
     public UserPanel() {
         setLayout(new BorderLayout());

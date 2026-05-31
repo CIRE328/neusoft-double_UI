@@ -27,6 +27,7 @@ public class AdminFrame extends JFrame {
         tabbedPane.addTab("用户管理", new UserPanel());
         tabbedPane.addTab("膳食管理", new MealPanel());
         tabbedPane.addTab("统计信息", new StatisticsPanel());
+        tabbedPane.addTab("AI助手", new AiAssistantPanel());
         getContentPane().add(tabbedPane);
     }
 }

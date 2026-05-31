@@ -7,12 +7,24 @@ import javax.swing.*;
 import java.awt.*;
 import java.text.SimpleDateFormat;
 
+/**
+ * 修改客户信息对话框
+ * 编辑客户的姓名、联系电话及合同到期时间
+ */
+
 public class ModifyCustomerDialog extends JDialog {
     private CustomerService customerService = new CustomerService();
     private Integer customerId;
     private boolean success = false;
 
     private JTextField nameField, phoneField, expireField;
+
+    /**
+     * 构造函数
+     *
+     * @param owner      父窗口
+     * @param customerId 客户 ID
+     */
 
     public ModifyCustomerDialog(Window owner, Integer customerId) {
         super(owner, "修改客户信息", ModalityType.APPLICATION_MODAL);
@@ -77,6 +89,12 @@ public class ModifyCustomerDialog extends JDialog {
             UIUtils.showError(this, "日期格式错误");
         }
     }
+
+    /**
+     * 判断修改是否成功
+     *
+     * @return 修改是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

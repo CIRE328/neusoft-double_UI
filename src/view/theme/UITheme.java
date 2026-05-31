@@ -3,7 +3,17 @@ package view.theme;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 全局 UI 主题配置
+ * 统一设置 Swing 组件的字体、表格行高及选项卡高度等外观属性
+ */
+
 public class UITheme {
+
+    /**
+     * 应用全局 UI 主题样式
+     */
+
     public static void apply() {
         // 全局字体
         Font defaultFont = new Font("微软雅黑", Font.PLAIN, 14);

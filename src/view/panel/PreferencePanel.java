@@ -14,12 +14,23 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * 客户饮食喜好面板
+ * 管理各客户的饮食偏好与注意事项，支持编辑和删除
+ */
+
 public class PreferencePanel extends JPanel {
     private MealService mealService;
     private CustomerService customerService = new CustomerService();
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     *
+     * @param mealService 膳食服务
+     */
 
     public PreferencePanel(MealService mealService) {
         this.mealService = mealService;

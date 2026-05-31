@@ -6,6 +6,11 @@ import view.util.UIUtils;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 护理项目编辑对话框
+ * 用于新增或编辑护理项目的编号、名称、价格及执行周期等信息
+ */
+
 public class NurseItemDialog extends JDialog {
     private NurseService nurseService;
     private NurseContent item;
@@ -13,6 +18,14 @@ public class NurseItemDialog extends JDialog {
 
     private JTextField serialField, nameField, priceField, cycleField, timesField, messageField;
     private JComboBox<String> statusCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param owner        父窗口
+     * @param nurseService 护理服务
+     * @param item         待编辑的护理项目，为 null 时表示新增
+     */
 
     public NurseItemDialog(Window owner, NurseService nurseService, NurseContent item) {
         super(owner, item == null ? "新增护理项目" : "编辑护理项目", ModalityType.APPLICATION_MODAL);
@@ -87,6 +100,12 @@ public class NurseItemDialog extends JDialog {
             UIUtils.showError(this, "保存失败: " + ex.getMessage());
         }
     }
+
+    /**
+     * 判断保存是否成功
+     *
+     * @return 保存是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

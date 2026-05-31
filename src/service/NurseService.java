@@ -175,7 +175,6 @@ public class NurseService {
                 .filter(r -> r.getCustomerId().equals(customerId))
                 .collect(Collectors.toList());
     }
-
     public boolean deleteNurseRecord(Integer recordId) {
         return nurseRecordDao.deleteById(recordId);
     }

@@ -13,6 +13,11 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 膳食日历面板
+ * 按星期管理早中晚餐次安排，支持按客户喜好推荐餐次
+ */
+
 public class MealCalendarPanel extends JPanel {
     private MealService mealService;
     private CustomerService customerService = new CustomerService();
@@ -23,6 +28,12 @@ public class MealCalendarPanel extends JPanel {
 
     private final String[] weeks = {"周一", "周二", "周三", "周四", "周五", "周六", "周日"};
     private final String[] mealTypes = {"早餐", "午餐", "晚餐"};
+
+    /**
+     * 构造函数
+     *
+     * @param mealService 膳食服务
+     */
 
     public MealCalendarPanel(MealService mealService) {
         this.mealService = mealService;

@@ -8,11 +8,23 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.util.List;
 
+/**
+ * 外出申请审核对话框
+ * 管理员查看外出申请列表并进行通过或拒绝审核
+ */
+
 public class AuditOutwardDialog extends JDialog {
     private CustomerService customerService = new CustomerService();
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     * 初始化审核界面、加载数据并显示对话框
+     *
+     * @param owner 父窗口
+     */
 
     public AuditOutwardDialog(Window owner) {
         super(owner, "外出申请审核", ModalityType.APPLICATION_MODAL);

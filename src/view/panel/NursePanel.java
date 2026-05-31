@@ -5,8 +5,18 @@ import view.dialog.*;
 import javax.swing.*;
 import java.awt.*;
 
+/**
+ * 护理管理面板
+ * 以选项卡集成护理项目、护理级别及客户护理设置三个子面板
+ */
+
 public class NursePanel extends JPanel {
     private NurseService nurseService = new NurseService();
+
+    /**
+     * 构造函数
+     * 初始化护理管理选项卡布局
+     */
 
     public NursePanel() {
         setLayout(new BorderLayout());

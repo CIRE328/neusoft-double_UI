@@ -15,6 +15,11 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 健康管家管理面板
+ * 左右分栏展示管家列表与客户列表，支持为客户分配或移除管家
+ */
+
 public class HousekeeperPanel extends JPanel {
     private HousekeeperService housekeeperService = new HousekeeperService();
     private CustomerService customerService = new CustomerService();
@@ -23,6 +28,11 @@ public class HousekeeperPanel extends JPanel {
     private JTable housekeeperTable;
     private DefaultTableModel housekeeperModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     * 初始化管家管理界面并加载数据
+     */
 
     public HousekeeperPanel() {
         setLayout(new BorderLayout());

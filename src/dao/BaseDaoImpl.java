@@ -2,6 +2,8 @@ package dao;
 
 import java.lang.reflect.Field;
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -100,6 +102,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
     }
 
+    // 受保护的辅助方法
     protected List<T> executeQuery(String sql, Object... params) {
         List<T> list = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
@@ -115,23 +118,16 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                         Field field = entry.getValue();
                         Object value = rs.getObject(column);
                         if (value != null) {
-                            // 处理日期类型转换
                             if (field.getType() == java.util.Date.class) {
                                 if (value instanceof Timestamp) {
-                                    field.set(entity, new java.util.Date(((Timestamp) value).getTime()));
-                                } else if (value instanceof java.time.LocalDateTime) {
-                                    java.time.LocalDateTime ldt = (java.time.LocalDateTime) value;
-                                    java.util.Date date = java.util.Date.from(ldt.atZone(java.time.ZoneId.systemDefault()).toInstant());
+                                    field.set(entity, value);
+                                } else if (value instanceof LocalDateTime) {
+                                    // 处理 MySQL 驱动返回 LocalDateTime 的情况
+                                    java.util.Date date = java.util.Date.from(((LocalDateTime) value).atZone(ZoneId.systemDefault()).toInstant());
                                     field.set(entity, date);
-                                } else if (value instanceof java.sql.Date) {
-                                    field.set(entity, new java.util.Date(((java.sql.Date) value).getTime()));
                                 } else {
                                     field.set(entity, value);
                                 }
-                            } else if (field.getType() == java.time.LocalDateTime.class && value instanceof java.util.Date) {
-                                java.util.Date date = (java.util.Date) value;
-                                java.time.LocalDateTime ldt = date.toInstant().atZone(java.time.ZoneId.systemDefault()).toLocalDateTime();
-                                field.set(entity, ldt);
                             } else {
                                 field.set(entity, value);
                             }
@@ -163,8 +159,10 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
     }
 
+    // 为实体中的审计字段设置默认值（插入前调用）
     private void setDefaultValues(T entity) {
         try {
+            // createTime
             try {
                 Field f = entityClass.getDeclaredField("createTime");
                 f.setAccessible(true);
@@ -172,6 +170,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                     f.set(entity, new java.util.Date());
                 }
             } catch (NoSuchFieldException ignored) {}
+            // updateTime
             try {
                 Field f = entityClass.getDeclaredField("updateTime");
                 f.setAccessible(true);
@@ -179,13 +178,15 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                     f.set(entity, new java.util.Date());
                 }
             } catch (NoSuchFieldException ignored) {}
+            // createBy
             try {
                 Field f = entityClass.getDeclaredField("createBy");
                 f.setAccessible(true);
                 if (f.get(entity) == null) {
-                    f.set(entity, 0);
+                    f.set(entity, 0); // 默认0，可根据实际修改
                 }
             } catch (NoSuchFieldException ignored) {}
+            // updateBy
             try {
                 Field f = entityClass.getDeclaredField("updateBy");
                 f.setAccessible(true);
@@ -193,6 +194,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                     f.set(entity, 0);
                 }
             } catch (NoSuchFieldException ignored) {}
+            // isDeleted
             if (useLogicDelete) {
                 try {
                     Field f = entityClass.getDeclaredField("isDeleted");
@@ -207,6 +209,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
     }
 
+    // BaseDao 接口实现
     @Override
     public List<T> findAll() {
         return executeQuery(getSelectAllSql(false));
@@ -258,6 +261,7 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
 
     @Override
     public T update(T entity) {
+        // 自动更新 updateTime 和 updateBy（如果有）
         try {
             try {
                 Field f = entityClass.getDeclaredField("updateTime");

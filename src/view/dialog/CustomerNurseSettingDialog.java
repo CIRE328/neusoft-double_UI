@@ -16,6 +16,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 客户护理设置对话框
+ * 管理客户的护理级别、已购护理项目的续费/移除及购买新护理项目
+ */
+
 public class CustomerNurseSettingDialog extends JDialog {
     private NurseService nurseService;
     private CustomerService customerService = new CustomerService();
@@ -23,6 +28,15 @@ public class CustomerNurseSettingDialog extends JDialog {
     private Customer customer;
     private JTable itemTable;
     private DefaultTableModel itemModel;
+
+    /**
+     * 构造函数
+     * 加载客户护理项目并显示对话框
+     *
+     * @param owner        父窗口
+     * @param nurseService 护理服务
+     * @param customerId   客户 ID
+     */
 
     public CustomerNurseSettingDialog(Window owner, NurseService nurseService, Integer customerId) {
         super(owner, "客户护理设置", ModalityType.APPLICATION_MODAL);

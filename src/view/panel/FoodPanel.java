@@ -13,12 +13,23 @@ import java.awt.event.ActionEvent;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 食品管理面板
+ * 维护食品信息的增删改查，支持按名称和类型筛选
+ */
+
 public class FoodPanel extends JPanel {
     private MealService mealService;
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField nameField;
     private JComboBox<String> typeCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param mealService 膳食服务
+     */
 
     public FoodPanel(MealService mealService) {
         this.mealService = mealService;

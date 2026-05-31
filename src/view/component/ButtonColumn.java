@@ -10,8 +10,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 /**
- * 表格中的按钮列，用于放置编辑、删除等操作按钮
+ * 表格按钮列组件
+ * 在 JTable 指定列中渲染可点击按钮，用于编辑、删除等行级操作
  */
+
 public class ButtonColumn extends AbstractCellEditor
         implements TableCellRenderer, TableCellEditor, ActionListener, MouseListener {
 
@@ -22,6 +24,16 @@ public class ButtonColumn extends AbstractCellEditor
     private int column;
     private int row;
     private ActionListener actionListener;
+
+    /**
+     * 构造函数
+     * 在指定表格列注册按钮渲染器、编辑器及鼠标监听
+     *
+     * @param table          目标表格
+     * @param text           按钮显示文字
+     * @param column         列索引
+     * @param actionListener 按钮点击回调，ActionEvent 的 actionCommand 为行号
+     */
 
     public ButtonColumn(JTable table, String text, int column, ActionListener actionListener) {
         this.table = table;
@@ -56,8 +68,16 @@ public class ButtonColumn extends AbstractCellEditor
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        // 先触发业务回调
         actionListener.actionPerformed(new ActionEvent(table, ActionEvent.ACTION_PERFORMED, "" + row));
-        fireEditingStopped();
+
+        // 检查当前行是否仍然在有效范围内（防止回调中修改了模型）
+        if (row >= 0 && row < table.getModel().getRowCount()) {
+            fireEditingStopped();
+        } else {
+            // 行已无效，直接取消编辑，避免触发异常
+            fireEditingCanceled();
+        }
     }
 
     @Override

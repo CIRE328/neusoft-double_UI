@@ -14,6 +14,11 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * 床位使用详情查询对话框
+ * 按客户姓名、入住日期及使用状态复合查询床位使用记录
+ */
+
 public class BedUsageQueryDialog extends JDialog {
     private BedService bedService;
     private CustomerService customerService = new CustomerService();
@@ -22,6 +27,14 @@ public class BedUsageQueryDialog extends JDialog {
     private JComboBox<String> statusCombo;
     private JTable resultTable;
     private DefaultTableModel tableModel;
+
+    /**
+     * 构造函数
+     * 初始化查询界面并显示对话框
+     *
+     * @param owner      父窗口
+     * @param bedService 床位服务
+     */
 
     public BedUsageQueryDialog(Window owner, BedService bedService) {
         super(owner, "床位使用详情查询", ModalityType.APPLICATION_MODAL);

@@ -7,6 +7,11 @@ import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 
+/**
+ * 食品编辑对话框
+ * 用于新增或编辑食品的名称、类型、价格及是否清真等信息
+ */
+
 public class FoodDialog extends JDialog {
     private MealService mealService;
     private Food food;
@@ -14,6 +19,14 @@ public class FoodDialog extends JDialog {
 
     private JTextField nameField, typeField, priceField;
     private JComboBox<String> halalCombo;
+
+    /**
+     * 构造函数
+     *
+     * @param owner       父窗口
+     * @param mealService 膳食服务
+     * @param food        待编辑的食品，为 null 时表示新增
+     */
 
     public FoodDialog(Window owner, MealService mealService, Food food) {
         super(owner, food == null ? "新增食品" : "编辑食品", ModalityType.APPLICATION_MODAL);
@@ -72,6 +85,12 @@ public class FoodDialog extends JDialog {
             UIUtils.showError(this, "保存失败: " + ex.getMessage());
         }
     }
+
+    /**
+     * 判断保存是否成功
+     *
+     * @return 保存是否成功
+     */
 
     public boolean isSuccess() { return success; }
 }

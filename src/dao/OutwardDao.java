@@ -17,7 +17,7 @@ public class OutwardDao extends BaseDaoImpl<Outward, Integer> {
 
     //根据审批状态查询（0已提交 1同意 2拒绝）
     public List<Outward> findByAuditStatus(Integer auditStatus) {
-        String sql = "SELECT * FROM outward WHERE audit_status = ? AND is_deleted = 0";
+        String sql = "SELECT * FROM outward WHERE auditstatus = ? AND is_deleted = 0";
         return executeQuery(sql, auditStatus);
     }
 }

@@ -13,12 +13,23 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
 
+/**
+ * 客户护理设置面板
+ * 列出客户并打开护理设置对话框，配置护理级别与护理项目
+ */
+
 public class CustomerNurseSettingPanel extends JPanel {
     private NurseService nurseService;
     private CustomerService customerService = new CustomerService();
     private JTable table;
     private DefaultTableModel tableModel;
     private JTextField searchField;
+
+    /**
+     * 构造函数
+     *
+     * @param nurseService 护理服务
+     */
 
     public CustomerNurseSettingPanel(NurseService nurseService) {
         this.nurseService = nurseService;

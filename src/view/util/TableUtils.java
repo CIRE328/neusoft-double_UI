@@ -7,9 +7,20 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import java.awt.*;
 
+/**
+ * 表格 UI 工具类
+ * 提供表格样式设置及列宽自动调整等辅助方法
+ */
+
 public class TableUtils {
 
-    // 设置表格基本样式
+    /**
+     * 设置表格基本样式
+     * 包括行高、字体、表头样式及内容居中对齐
+     *
+     * @param table 目标表格
+     */
+
     public static void styleTable(JTable table) {
         table.setRowHeight(28);
         table.setIntercellSpacing(new Dimension(10, 5));
@@ -25,7 +36,12 @@ public class TableUtils {
         table.setDefaultRenderer(Object.class, centerRenderer);
     }
 
-    // 自动调整列宽（简单实现）
+    /**
+     * 根据单元格内容自动调整列宽
+     *
+     * @param table 目标表格
+     */
+
     public static void autoResizeColumns(JTable table) {
         TableColumnModel colModel = table.getColumnModel();
         for (int i = 0; i < table.getColumnCount(); i++) {
