@@ -31,27 +31,4 @@ public class NurseLevelItemDao extends BaseDaoImpl<NurseLevelItem, Integer> {
         return executeQuery(sql, levelId);
     }
 
-    /**
-     * 根据护理项目ID查询被哪些级别引用
-     *
-     * @param itemId 护理项目ID
-     * @return 引用该项目的级别关联列表
-     */
-
-    public List<NurseLevelItem> findByItemId(Integer itemId) {
-        String sql = "SELECT * FROM nurselevelitem WHERE item_id = ?";
-        return executeQuery(sql, itemId);
-    }
-
-    /**
-     * 删除某个护理级别的所有项目关联
-     *
-     * @param levelId 护理级别ID
-     * @return 受影响的行数
-     */
-
-    public int deleteByLevelId(Integer levelId) {
-        String sql = "DELETE FROM nurselevelitem WHERE level_id = ?";
-        return executeUpdate(sql, levelId);
-    }
 }

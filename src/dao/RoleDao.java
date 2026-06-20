@@ -1,8 +1,6 @@
 package dao;
 
 import pojo.Role;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 角色数据访问对象
@@ -20,17 +18,4 @@ public class RoleDao extends BaseDaoImpl<Role, Integer> {
         super("role", "id", Role.class);
     }
 
-    /**
-     * 根据角色名称查询角色
-     * 角色名称唯一，最多返回一个角色
-     *
-     * @param name 角色名称
-     * @return 包含查询结果的 Optional 对象
-     */
-
-    public Optional<Role> findByName(String name) {
-        String sql = "SELECT * FROM role WHERE name = ? AND is_deleted = 0";
-        List<Role> list = executeQuery(sql, name);
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
-    }
 }

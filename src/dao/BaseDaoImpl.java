@@ -7,6 +7,17 @@ import java.time.ZoneId;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * 基础DAO实现类，提供通用的数据库操作功能
+ * 使用泛型支持任意实体类型和ID类型
+ * 支持逻辑删除和物理删除两种删除方式
+ * 自动处理实体字段与数据库列名的映射（驼峰转下划线）
+ * 自动设置审计字段（createTime, updateTime, createBy, updateBy, isDeleted）
+ *
+ * @param <T> 实体类型
+ * @param <ID> 主键类型
+ */
+
 public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
 
     private final String tableName;
@@ -15,9 +26,26 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
     private final Map<String, Field> columnToFieldMap;
     private final boolean useLogicDelete;
 
+    /**
+     * 构造函数，默认启用逻辑删除
+     *
+     * @param tableName 表名
+     * @param idColumn 主键列名
+     * @param entityClass 实体类类型
+     */
+
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass) {
         this(tableName, idColumn, entityClass, true);
     }
+
+    /**
+     * 构造函数
+     *
+     * @param tableName 表名
+     * @param idColumn 主键列名
+     * @param entityClass 实体类类型
+     * @param useLogicDelete 是否启用逻辑删除
+     */
 
     public BaseDaoImpl(String tableName, String idColumn, Class<T> entityClass, boolean useLogicDelete) {
         this.tableName = tableName;
@@ -91,6 +119,13 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
                 " WHERE " + idColumn + " = ?";
     }
 
+    /**
+     * 生成逻辑删除的SQL语句
+     *
+     * @return SQL语句
+     * @throws UnsupportedOperationException 如果未启用逻辑删除
+     */
+
     private String getLogicDeleteSql() {
         if (!useLogicDelete) {
             throw new UnsupportedOperationException("Table " + tableName + " does not support logical deletion.");
@@ -98,11 +133,24 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return "UPDATE " + tableName + " SET is_deleted = 1 WHERE " + idColumn + " = ?";
     }
 
+    /**
+     * 生成物理删除的SQL语句
+     *
+     * @return SQL语句
+     */
+
     private String getForceDeleteSql() {
         return "DELETE FROM " + tableName + " WHERE " + idColumn + " = ?";
     }
 
-    // 受保护的辅助方法
+    /**
+     * 执行查询操作，返回实体列表
+     *
+     * @param sql SQL语句
+     * @param params 查询参数
+     * @return 实体列表
+     */
+    
     protected List<T> executeQuery(String sql, Object... params) {
         List<T> list = new ArrayList<>();
         try (Connection conn = DBUtil.getConnection();
@@ -142,6 +190,14 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return list;
     }
 
+    /**
+     * 执行更新操作（INSERT、UPDATE、DELETE）
+     *
+     * @param sql SQL语句
+     * @param params 查询参数
+     * @return 影响的行数
+     */
+
     protected int executeUpdate(String sql, Object... params) {
         try (Connection conn = DBUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -159,7 +215,13 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
     }
 
-    // 为实体中的审计字段设置默认值（插入前调用）
+    /**
+     * 为实体中的审计字段设置默认值（插入前调用）
+     * 包括：createTime、updateTime、createBy、updateBy、isDeleted
+     *
+     * @param entity 实体对象
+     */
+    
     private void setDefaultValues(T entity) {
         try {
             // createTime
@@ -210,16 +272,37 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
     }
 
     // BaseDao 接口实现
+    /**
+     * 查询所有未删除的记录
+     *
+     * @return 实体列表
+     */
+    
     @Override
     public List<T> findAll() {
         return executeQuery(getSelectAllSql(false));
     }
+
+    /**
+     * 根据ID查询记录
+     *
+     * @param id 主键值
+     * @return 包含实体的Optional对象
+     */
 
     @Override
     public Optional<T> findById(ID id) {
         List<T> list = executeQuery(getSelectByIdSql(), id);
         return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
     }
+
+    /**
+     * 插入新记录
+     * 自动设置审计字段默认值，并返回生成的主键值
+     *
+     * @param entity 实体对象
+     * @return 插入后的实体对象（包含生成的主键）
+     */
 
     @Override
     public T insert(T entity) {
@@ -258,6 +341,14 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         }
         return entity;
     }
+
+    /**
+     * 更新记录
+     * 自动更新updateTime和updateBy字段
+     *
+     * @param entity 实体对象
+     * @return 更新后的实体对象
+     */
 
     @Override
     public T update(T entity) {
@@ -300,6 +391,14 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return entity;
     }
 
+    /**
+     * 根据ID删除记录
+     * 如果启用逻辑删除，则执行逻辑删除；否则执行物理删除
+     *
+     * @param id 主键值
+     * @return 是否删除成功
+     */
+
     @Override
     public boolean deleteById(ID id) {
         if (!useLogicDelete) {
@@ -308,10 +407,23 @@ public abstract class BaseDaoImpl<T, ID> implements BaseDao<T, ID> {
         return executeUpdate(getLogicDeleteSql(), id) > 0;
     }
 
+    /**
+     * 根据ID物理删除记录
+     *
+     * @param id 主键值
+     * @return 是否删除成功
+     */
+
     @Override
     public boolean forceDeleteById(ID id) {
         return executeUpdate(getForceDeleteSql(), id) > 0;
     }
+
+    /**
+     * 查询所有记录（包括已删除的记录）
+     *
+     * @return 实体列表
+     */
 
     @Override
     public List<T> findAllIncludingDeleted() {

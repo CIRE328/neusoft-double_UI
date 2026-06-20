@@ -1,4 +1,4 @@
-<!-- Checkin：客户入住登记，新增客户并办理入住 -->
+<!-- Checkin：客户入住登记，新增客户并办理入住，支持编辑和删除客户 -->
 <template>
   <div>
     <!-- 查询表单 -->
@@ -21,9 +21,11 @@
       <el-table-column prop="customerName" label="姓名" />
       <el-table-column prop="customerAge" label="年龄" />
       <el-table-column prop="idcard" label="身份证号" />
-      <el-table-column label="操作" width="120">
+      <el-table-column label="操作" width="220">
         <template #default="{ row }">
-          <el-button type="primary" size="small" @click="openCheckinDialog(row)">入住登记</el-button>
+          <el-button type="primary" size="small" @click="openEditDialog(row)">编辑</el-button>
+          <el-button type="success" size="small" @click="openCheckinDialog(row)">入住登记</el-button>
+          <el-button type="danger" size="small" @click="deleteCustomer(row)">删除</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -63,10 +65,27 @@
       </template>
     </el-dialog>
 
+    <!-- 编辑客户对话框 -->
+    <el-dialog title="编辑客户" v-model="editDialogVisible" width="500px">
+      <el-form :model="editForm" label-width="100px">
+        <el-form-item label="姓名"><el-input v-model="editForm.customerName" /></el-form-item>
+        <el-form-item label="性别">
+          <el-radio v-model="editForm.customerSex" :label="1">男</el-radio>
+          <el-radio v-model="editForm.customerSex" :label="0">女</el-radio>
+        </el-form-item>
+        <el-form-item label="身份证号"><el-input v-model="editForm.idcard" /></el-form-item>
+        <el-form-item label="联系电话"><el-input v-model="editForm.contactTel" /></el-form-item>
+        <el-form-item label="家属"><el-input v-model="editForm.familyMember" /></el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="editDialogVisible = false">取消</el-button>
+        <el-button type="primary" @click="saveEdit">保存</el-button>
+      </template>
+    </el-dialog>
+
     <!-- 入住登记对话框 -->
     <el-dialog title="入住登记" v-model="checkinDialogVisible" width="600px">
       <el-form :model="checkinForm" label-width="100px">
-        <!-- 客户基本信息（只读） -->
         <el-divider content-position="left">客户信息</el-divider>
         <el-form-item label="姓名">{{ checkinForm.customerName }}</el-form-item>
         <el-form-item label="性别">{{ checkinForm.customerSex === 1 ? '男' : '女' }}</el-form-item>
@@ -108,13 +127,9 @@
 </template>
 
 <script setup>
-/**
- * 入住登记组件
- * 查询客户列表、新增客户信息，并为选定客户分配床位完成入住登记
- */
 import { ref, onMounted } from 'vue'
 import request from '../../../utils/request'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 
 // 查询相关
 const searchName = ref('')
@@ -134,10 +149,14 @@ const newCustomer = ref({
   contactTel: ''
 })
 
+// 编辑客户相关
+const editDialogVisible = ref(false)
+const editForm = ref({})
+
 // 入住登记相关
 const checkinDialogVisible = ref(false)
 const checkinForm = ref({
-  id: null,          // 客户ID
+  id: null,
   customerName: '',
   customerSex: 1,
   idcard: '',
@@ -182,7 +201,7 @@ const openAddCustomerDialog = () => {
   addCustomerDialogVisible.value = true
 }
 
-// 新增客户（保存基本信息）
+// 新增客户
 const addCustomer = async () => {
   if (!newCustomer.value.customerName) {
     ElMessage.warning('请填写客户姓名')
@@ -193,11 +212,9 @@ const addCustomer = async () => {
     if (res.code === 200) {
       ElMessage.success('客户添加成功')
       addCustomerDialogVisible.value = false
-      // 刷新客户列表
       await searchCustomers()
       // 自动打开该客户的入住登记对话框
-      const savedCustomer = res.data
-      openCheckinDialog(savedCustomer)
+      openCheckinDialog(res.data)
     } else {
       ElMessage.error(res.message || '添加失败')
     }
@@ -206,9 +223,31 @@ const addCustomer = async () => {
   }
 }
 
-// 打开入住登记对话框（基于已有客户）
+// 打开编辑客户对话框
+const openEditDialog = (row) => {
+  editForm.value = { ...row }
+  editDialogVisible.value = true
+}
+
+// 保存编辑
+const saveEdit = async () => {
+  await request.put('/customer', editForm.value)
+  ElMessage.success('修改成功')
+  editDialogVisible.value = false
+  searchCustomers()
+}
+
+// 删除客户
+const deleteCustomer = (row) => {
+  ElMessageBox.confirm('确定删除该客户吗？', '提示').then(async () => {
+    await request.delete('/customer', { params: { id: row.id } })
+    ElMessage.success('删除成功')
+    searchCustomers()
+  })
+}
+
+// 打开入住登记对话框
 const openCheckinDialog = async (customer) => {
-  // 复制客户信息到 checkinForm
   checkinForm.value = {
     id: customer.id,
     customerName: customer.customerName,
@@ -249,12 +288,8 @@ const submitCheckin = async () => {
     ElMessage.warning('请选择床位')
     return
   }
-  if (!checkinForm.value.checkinDate) {
-    ElMessage.warning('请选择入住时间')
-    return
-  }
-  if (!checkinForm.value.expirationDate) {
-    ElMessage.warning('请选择合同到期时间')
+  if (!checkinForm.value.checkinDate || !checkinForm.value.expirationDate) {
+    ElMessage.warning('请填写入住时间和合同到期时间')
     return
   }
   if (new Date(checkinForm.value.expirationDate) < new Date(checkinForm.value.checkinDate)) {
@@ -262,7 +297,6 @@ const submitCheckin = async () => {
     return
   }
 
-  // 构建提交参数（复用客户已有字段，加上床位和入住信息）
   const submitData = {
     ...checkinForm.value,
     bedId: selectedBedId.value
@@ -272,7 +306,6 @@ const submitCheckin = async () => {
     if (res.code === 200) {
       ElMessage.success('入住登记成功')
       checkinDialogVisible.value = false
-      // 刷新客户列表
       await searchCustomers()
     } else {
       ElMessage.error(res.message || '入住失败')
@@ -282,7 +315,7 @@ const submitCheckin = async () => {
   }
 }
 
-// 新增客户时的年龄计算
+// 年龄计算
 const calcAgeForNew = () => {
   if (newCustomer.value.birthday) {
     const birth = new Date(newCustomer.value.birthday)

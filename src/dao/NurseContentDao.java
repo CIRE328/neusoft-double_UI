@@ -31,15 +31,4 @@ public class NurseContentDao extends BaseDaoImpl<NurseContent, Integer> {
         return executeQuery(sql, status);
     }
 
-    /**
-     * 根据名称模糊查询护理项目
-     *
-     * @param keyword 查询关键字
-     * @return 名称包含关键字的护理项目列表
-     */
-
-    public List<NurseContent> findByNameLike(String keyword) {
-        String sql = "SELECT * FROM nursecontent WHERE nursing_name LIKE ? AND is_deleted = 0";
-        return executeQuery(sql, "%" + keyword + "%");
-    }
 }

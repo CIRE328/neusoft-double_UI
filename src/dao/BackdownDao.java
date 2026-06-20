@@ -31,14 +31,4 @@ public class BackdownDao extends BaseDaoImpl<BackDown, Integer> {
         return executeQuery(sql, customerId);
     }
 
-    /**
-     * 根据审批状态查询退住申请
-     * @param auditStatus 审批状态
-     * @return 退住申请列表
-     */
-
-    public List<BackDown> findByAuditStatus(Integer auditStatus) {
-        String sql = "SELECT * FROM backdown WHERE audit_status = ? AND is_deleted = 0";
-        return executeQuery(sql, auditStatus);
-    }
 }

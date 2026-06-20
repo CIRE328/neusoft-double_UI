@@ -2,6 +2,7 @@
  * REST API 服务端
  * 基于 JDK 内置 HttpServer 提供 HTTP 接口，供 Vue Web 前端调用；
  * 封装认证、客户、床位、护理、健康管家及用户管理等业务端点
+ * 新增：膳食管理、统计信息、健康管家我的申请、护理记录管家视角等
  */
 
 import com.sun.net.httpserver.HttpServer;
@@ -29,13 +30,7 @@ public class ApiServer {
     private static final NurseService nurseService = new NurseService();
     private static final HousekeeperService housekeeperService = new HousekeeperService();
     private static final UserService userService = new UserService();
-
-    /**
-     * 启动 HTTP 服务，监听 8080 端口并注册全部 API 路由
-     *
-     * @param args 命令行参数（未使用）
-     * @throws IOException 创建或启动服务器失败时抛出
-     */
+    private static final MealService mealService = new MealService();       // 膳食服务
 
     public static void main(String[] args) throws IOException {
         HttpServer server = HttpServer.create(new InetSocketAddress(8080), 0);
@@ -61,12 +56,14 @@ public class ApiServer {
         server.createContext("/api/backdown/list", new BackdownListHandler());
         server.createContext("/api/backdown/audit", new BackdownAuditHandler());
         server.createContext("/api/backdown/apply", new BackdownApplyHandler());
+        server.createContext("/api/backdown/my", new MyBackdownHandler()); // 新增：健康管家我的退住申请
 
         // 外出申请
         server.createContext("/api/outward/list", new OutwardListHandler());
         server.createContext("/api/outward/audit", new OutwardAuditHandler());
         server.createContext("/api/outward/return", new OutwardReturnHandler());
         server.createContext("/api/outward/apply", new OutwardApplyHandler());
+        server.createContext("/api/outward/my", new MyOutwardHandler());   // 新增：健康管家我的外出申请
 
         // 床位管理
         server.createContext("/api/bed/statistics", new BedStatisticsHandler());
@@ -84,8 +81,9 @@ public class ApiServer {
         server.createContext("/api/nurse/item/list", new NurseItemListHandler());
         server.createContext("/api/nurse/item", new NurseItemHandler());
         server.createContext("/api/nurse/record", new NurseRecordHandler());
-        server.createContext("/api/nurse/record/list", new NurseRecordListHandler());
+        server.createContext("/api/nurse/record/list", new NurseRecordListHandler());      // 管理员查询
         server.createContext("/api/nurse/record/customer", new NurseRecordCustomerHandler());
+        server.createContext("/api/nurse/record/my", new MyNurseRecordHandler());         // 新增：健康管家查看自己客户的护理记录
 
         // 健康管家
         server.createContext("/api/housekeeper/list", new HousekeeperListHandler());
@@ -97,6 +95,20 @@ public class ApiServer {
         server.createContext("/api/user/list", new UserListHandler());
         server.createContext("/api/user", new UserHandler());
         server.createContext("/api/user/reset-password", new ResetPasswordHandler());
+
+        // 膳食管理
+        server.createContext("/api/food/list", new FoodListHandler());
+        server.createContext("/api/food", new FoodHandler());
+        server.createContext("/api/preference/list", new PreferenceListHandler());
+        server.createContext("/api/preference", new PreferenceHandler());
+        server.createContext("/api/meal/calendar", new MealCalendarHandler());
+        server.createContext("/api/meal", new MealHandler());
+
+        // 统计信息
+        server.createContext("/api/statistics/bed", new BedStatisticsHandler());          // 复用床位统计
+        server.createContext("/api/statistics/customer", new CustomerStatisticsHandler());
+        server.createContext("/api/statistics/record/count", new RecordCountHandler());
+        server.createContext("/api/statistics/record/recent", new RecentRecordsHandler());
 
         server.setExecutor(null);
         server.start();
@@ -124,7 +136,7 @@ public class ApiServer {
         }
     }
 
-    // ---------- 客户管理 ----------
+    // ---------- 客户管理（与原有保持一致，略作优化）----------
     static class CustomerListHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -170,7 +182,7 @@ public class ApiServer {
             sendSuccess(exchange, Collections.singletonMap("success", success));
         }
     }
-    // 新增客户（仅保存基本信息，不涉及入住）
+
     static class AddCustomerHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -179,9 +191,7 @@ public class ApiServer {
                 return;
             }
             Customer customer = gson.fromJson(readBody(exchange), Customer.class);
-            // 设置默认值
             customer.setIsDeleted(0);
-
             Customer saved = new CustomerDao().insert(customer);
             sendSuccess(exchange, saved);
         }
@@ -379,6 +389,48 @@ public class ApiServer {
         }
     }
 
+    // 健康管家我的退住申请
+    static class MyBackdownHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            // 从请求参数获取 userId（管家ID），实际应从 token 解析，这里简化
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            if (!params.containsKey("userId")) {
+                sendResponse(exchange, 400, error(400, "缺少 userId 参数"));
+                return;
+            }
+            Integer userId = Integer.parseInt(params.get("userId"));
+            // 获取该管家服务的客户ID列表
+            List<Integer> customerIds = housekeeperService.findCustomersByHousekeeper(userId).stream()
+                    .map(Customer::getId).collect(Collectors.toList());
+            if (customerIds.isEmpty()) {
+                sendSuccess(exchange, Collections.emptyList());
+                return;
+            }
+            List<BackDown> list = customerService.findAllBackdowns().stream()
+                    .filter(b -> customerIds.contains(b.getCustomerId()))
+                    .collect(Collectors.toList());
+            CustomerDao dao = new CustomerDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (BackDown b : list) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", b.getId());
+                map.put("customerId", b.getCustomerId());
+                dao.findById(b.getCustomerId()).ifPresent(c -> map.put("customerName", c.getCustomerName()));
+                map.put("retreattype", b.getRetreattype());
+                map.put("retreatReason", b.getRetreatmentreason());
+                map.put("retreatTime", b.getRetreatment());
+                map.put("auditStatus", b.getAuditstatus());
+                result.add(map);
+            }
+            sendSuccess(exchange, result);
+        }
+    }
+
     // ---------- 外出申请 ----------
     static class OutwardListHandler implements HttpHandler {
         @Override
@@ -449,9 +501,77 @@ public class ApiServer {
                 sendResponse(exchange, 405, error(405, "Method not allowed"));
                 return;
             }
-            Outward outward = gson.fromJson(readBody(exchange), Outward.class);
-            boolean success = customerService.submitOutward(outward);
-            sendSuccess(exchange, Collections.singletonMap("success", success));
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
+                String body = reader.lines().collect(Collectors.joining());
+
+                Map<String, Object> req = gson.fromJson(body, new TypeToken<Map<String, Object>>() {}.getType());
+                Outward outward = new Outward();
+                outward.setCustomerId(((Number) req.get("customerId")).intValue());
+                outward.setOutgoingreasons((String) req.get("outgoingreasons"));
+                outward.setAuditstatus(0);
+                outward.setIsDeleted(0);
+
+                // 可选字段，可能为 null
+                outward.setEscorted(req.containsKey("escorted") ? (String) req.get("escorted") : "");
+                outward.setRelation(req.containsKey("relation") ? (String) req.get("relation") : "");
+                outward.setEscortedtel(req.containsKey("escortedtel") ? (String) req.get("escortedtel") : "");
+
+                // 日期转换
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                if (req.get("outgoingtime") != null && !req.get("outgoingtime").toString().isEmpty()) {
+                    outward.setOutgoingtime(sdf.parse(req.get("outgoingtime").toString()));
+                }
+                if (req.get("expectedreturntime") != null && !req.get("expectedreturntime").toString().isEmpty()) {
+                    outward.setExpectedreturntime(sdf.parse(req.get("expectedreturntime").toString()));
+                }
+
+                boolean success = customerService.submitOutward(outward);
+                sendSuccess(exchange, Collections.singletonMap("success", success));
+            } catch (Exception e) {
+                e.printStackTrace();  // 关键：打印完整堆栈
+                sendError(exchange, 500, "服务器内部错误：" + e.getMessage());
+            }
+        }
+    }
+
+    // 健康管家我的外出申请
+    static class MyOutwardHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            if (!params.containsKey("userId")) {
+                sendResponse(exchange, 400, error(400, "缺少 userId 参数"));
+                return;
+            }
+            Integer userId = Integer.parseInt(params.get("userId"));
+            List<Integer> customerIds = housekeeperService.findCustomersByHousekeeper(userId).stream()
+                    .map(Customer::getId).collect(Collectors.toList());
+            if (customerIds.isEmpty()) {
+                sendSuccess(exchange, Collections.emptyList());
+                return;
+            }
+            List<Outward> list = customerService.findAllOutwards().stream()
+                    .filter(o -> customerIds.contains(o.getCustomerId()))
+                    .collect(Collectors.toList());
+            CustomerDao dao = new CustomerDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Outward o : list) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", o.getId());
+                map.put("customerId", o.getCustomerId());
+                dao.findById(o.getCustomerId()).ifPresent(c -> map.put("customerName", c.getCustomerName()));
+                map.put("outgoingReason", o.getOutgoingreasons());
+                map.put("outgoingTime", o.getOutgoingtime());
+                map.put("expectedReturnTime", o.getExpectedreturntime());
+                map.put("actualReturnTime", o.getActualreturntime());
+                map.put("auditStatus", o.getAuditstatus());
+                result.add(map);
+            }
+            sendSuccess(exchange, result);
         }
     }
 
@@ -701,6 +821,7 @@ public class ApiServer {
         }
     }
 
+    // 管理员护理记录列表（按客户姓名模糊查询）
     static class NurseRecordListHandler implements HttpHandler {
         @Override
         public void handle(HttpExchange exchange) throws IOException {
@@ -743,6 +864,59 @@ public class ApiServer {
             Integer customerId = Integer.parseInt(params.get("customerId"));
             List<NurseRecord> records = nurseService.getNurseRecordsByCustomer(customerId);
             sendSuccess(exchange, records);
+        }
+    }
+
+    // 健康管家护理记录查询（只返回自己服务的客户的记录）
+    static class MyNurseRecordHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            String customerName = params.get("customerName");
+            Integer userId = null;
+            if (params.containsKey("userId")) {
+                userId = Integer.parseInt(params.get("userId"));
+            } else {
+                sendResponse(exchange, 400, error(400, "缺少 userId 参数"));
+                return;
+            }
+            // 获取该管家的客户ID列表
+            List<Integer> customerIds = housekeeperService.findCustomersByHousekeeper(userId).stream()
+                    .map(Customer::getId).collect(Collectors.toList());
+            if (customerIds.isEmpty()) {
+                sendSuccess(exchange, Collections.emptyList());
+                return;
+            }
+            // 按客户姓名过滤（可选）
+            List<Customer> customers = customerService.findCustomersByName(customerName);
+            List<Integer> filteredIds = customers.stream().map(Customer::getId).collect(Collectors.toList());
+            List<Integer> finalIds = customerIds.stream().filter(filteredIds::contains).collect(Collectors.toList());
+            if (finalIds.isEmpty()) {
+                sendSuccess(exchange, Collections.emptyList());
+                return;
+            }
+            List<NurseRecord> records = new ArrayList<>();
+            for (Integer cid : finalIds) {
+                records.addAll(nurseService.getNurseRecordsByCustomer(cid));
+            }
+            // 补充客户姓名和护理项目名称
+            CustomerDao cDao = new CustomerDao();
+            NurseContentDao ncDao = new NurseContentDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (NurseRecord r : records) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", r.getId());
+                map.put("nursingCount", r.getNursingCount());
+                map.put("nursingTime", r.getNursingTime());
+                cDao.findById(r.getCustomerId()).ifPresent(c -> map.put("customerName", c.getCustomerName()));
+                ncDao.findById(r.getItemId()).ifPresent(n -> map.put("nursingName", n.getNursingName()));
+                result.add(map);
+            }
+            sendSuccess(exchange, result);
         }
     }
 
@@ -795,10 +969,9 @@ public class ApiServer {
                 sendResponse(exchange, 405, error(405, "Method not allowed"));
                 return;
             }
-            // 实际应从token获取userId，这里要求前端传递userId参数
             Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
             if (!params.containsKey("userId")) {
-                sendResponse(exchange, 400, error(400, "缺少userId参数"));
+                sendResponse(exchange, 400, error(400, "缺少 userId 参数"));
                 return;
             }
             Integer userId = Integer.parseInt(params.get("userId"));
@@ -859,28 +1032,212 @@ public class ApiServer {
         }
     }
 
+    // ---------- 膳食管理 ----------
+    static class FoodListHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            String name = params.get("name");
+            String type = params.get("type");
+            List<Food> list;
+            if (type != null && !type.isEmpty()) {
+                list = mealService.findFoodsByType(type);
+            } else {
+                list = mealService.findFoodsByName(name);
+            }
+            sendSuccess(exchange, list);
+        }
+    }
+
+    static class FoodHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            if ("POST".equals(method)) {
+                Food food = gson.fromJson(readBody(exchange), Food.class);
+                Food saved = mealService.addFood(food);
+                sendSuccess(exchange, saved);
+            } else if ("PUT".equals(method)) {
+                Food food = gson.fromJson(readBody(exchange), Food.class);
+                boolean ok = mealService.updateFood(food);
+                sendSuccess(exchange, Collections.singletonMap("success", ok));
+            } else if ("DELETE".equals(method)) {
+                Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+                Integer id = Integer.parseInt(params.get("id"));
+                boolean ok = mealService.deleteFood(id);
+                sendSuccess(exchange, Collections.singletonMap("success", ok));
+            } else {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+            }
+        }
+    }
+
+    static class PreferenceListHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            String name = params.get("name");
+            List<Customer> customers = customerService.findCustomersByName(name);
+            PreferenceDao prefDao = new PreferenceDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Customer c : customers) {
+                prefDao.findByCustomerId(c.getId()).ifPresent(p -> {
+                    Map<String, Object> map = new HashMap<>();
+                    map.put("customerId", c.getId());
+                    map.put("customerName", c.getCustomerName());
+                    map.put("preferences", p.getPreferences());
+                    map.put("attention", p.getAttention());
+                    result.add(map);
+                });
+            }
+            sendSuccess(exchange, result);
+        }
+    }
+
+    static class PreferenceHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"POST".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, Object> req = gson.fromJson(readBody(exchange), new TypeToken<Map<String, Object>>() {}.getType());
+            Integer customerId = ((Number) req.get("customerId")).intValue();
+            String preferences = (String) req.get("preferences");
+            String attention = (String) req.get("attention");
+            Preference pref = new Preference();
+            pref.setCustomerId(customerId);
+            pref.setPreferences(preferences);
+            pref.setAttention(attention);
+            boolean ok = mealService.savePreference(pref);
+            sendSuccess(exchange, Collections.singletonMap("success", ok));
+        }
+    }
+
+    static class MealCalendarHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            String weekDay = params.get("weekDay");
+            List<Meal> meals = mealService.findMealsByWeekDay(weekDay);
+            FoodDao foodDao = new FoodDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (Meal m : meals) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", m.getId());
+                map.put("mealType", m.getMealType());
+                map.put("foodId", m.getFoodId());
+                map.put("taste", m.getTaste());
+                foodDao.findById(m.getFoodId()).ifPresent(f -> map.put("foodName", f.getFoodName()));
+                result.add(map);
+            }
+            sendSuccess(exchange, result);
+        }
+    }
+
+    static class MealHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            String method = exchange.getRequestMethod();
+            if ("POST".equals(method)) {
+                Meal meal = gson.fromJson(readBody(exchange), Meal.class);
+                boolean ok = mealService.scheduleMeal(meal);
+                sendSuccess(exchange, Collections.singletonMap("success", ok));
+            } else if ("PUT".equals(method)) {
+                Meal meal = gson.fromJson(readBody(exchange), Meal.class);
+                boolean ok = mealService.scheduleMeal(meal);
+                sendSuccess(exchange, Collections.singletonMap("success", ok));
+            } else if ("DELETE".equals(method)) {
+                Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+                Integer id = Integer.parseInt(params.get("id"));
+                // 注意：需要实现根据 id 删除， MealService 中没有直接删除的方法，我们调用 removeMealSchedule 需要 weekDay 和 mealType
+                // 简单起见，直接调用 mealDao.deleteById
+                boolean ok = new MealDao().deleteById(id);
+                sendSuccess(exchange, Collections.singletonMap("success", ok));
+            } else {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+            }
+        }
+    }
+
+    // ---------- 统计信息 ----------
+    static class CustomerStatisticsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            List<Customer> all = customerService.findAllCustomers();
+            long total = all.size();
+            long selfCare = all.stream().filter(c -> c.getLevelId() == null).count();
+            long nursingCare = total - selfCare;
+            Map<String, Long> stats = Map.of("total", total, "selfCare", selfCare, "nursingCare", nursingCare);
+            sendSuccess(exchange, stats);
+        }
+    }
+
+    static class RecordCountHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            long count = new NurseRecordDao().findAll().size();
+            sendSuccess(exchange, count);
+        }
+    }
+
+    static class RecentRecordsHandler implements HttpHandler {
+        @Override
+        public void handle(HttpExchange exchange) throws IOException {
+            if (!"GET".equals(exchange.getRequestMethod())) {
+                sendResponse(exchange, 405, error(405, "Method not allowed"));
+                return;
+            }
+            Map<String, String> params = getQueryParams(exchange.getRequestURI().getQuery());
+            int limit = 10;
+            if (params.containsKey("limit")) {
+                limit = Integer.parseInt(params.get("limit"));
+            }
+            List<NurseRecord> all = new NurseRecordDao().findAll();
+            all.sort((a, b) -> b.getNursingTime().compareTo(a.getNursingTime()));
+            List<NurseRecord> recent = all.stream().limit(limit).collect(Collectors.toList());
+            CustomerDao customerDao = new CustomerDao();
+            NurseContentDao contentDao = new NurseContentDao();
+            List<Map<String, Object>> result = new ArrayList<>();
+            for (NurseRecord r : recent) {
+                Map<String, Object> map = new HashMap<>();
+                map.put("id", r.getId());
+                map.put("nursingCount", r.getNursingCount());
+                map.put("nursingTime", r.getNursingTime());
+                customerDao.findById(r.getCustomerId()).ifPresent(c -> map.put("customerName", c.getCustomerName()));
+                contentDao.findById(r.getItemId()).ifPresent(n -> map.put("nursingName", n.getNursingName()));
+                result.add(map);
+            }
+            sendSuccess(exchange, result);
+        }
+    }
+
     // ---------- 工具方法 ----------
-
-    /**
-     * 读取 HTTP 请求体为字符串
-     *
-     * @param exchange HTTP 交换对象
-     * @return 请求体文本
-     * @throws IOException 读取失败时抛出
-     */
-
     private static String readBody(HttpExchange exchange) throws IOException {
         try (BufferedReader br = new BufferedReader(new InputStreamReader(exchange.getRequestBody(), StandardCharsets.UTF_8))) {
             return br.lines().collect(Collectors.joining());
         }
     }
-
-    /**
-     * 解析 URL 查询字符串为键值对
-     *
-     * @param query 查询字符串（不含 ?）
-     * @return 参数 Map，query 为 null 时返回空 Map
-     */
 
     private static Map<String, String> getQueryParams(String query) {
         Map<String, String> params = new HashMap<>();
@@ -891,15 +1248,6 @@ public class ApiServer {
         }
         return params;
     }
-
-    /**
-     * 发送 JSON 响应并设置 CORS 头
-     *
-     * @param exchange   HTTP 交换对象
-     * @param statusCode HTTP 状态码
-     * @param response   响应 JSON 字符串
-     * @throws IOException 写入响应失败时抛出
-     */
 
     private static void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json;charset=UTF-8");
@@ -917,14 +1265,6 @@ public class ApiServer {
         }
     }
 
-    /**
-     * 发送成功响应（code=200，data 为业务数据）
-     *
-     * @param exchange HTTP 交换对象
-     * @param data     业务数据对象
-     * @throws IOException 写入响应失败时抛出
-     */
-
     private static void sendSuccess(HttpExchange exchange, Object data) throws IOException {
         Map<String, Object> result = new HashMap<>();
         result.put("code", 200);
@@ -932,26 +1272,9 @@ public class ApiServer {
         sendResponse(exchange, 200, gson.toJson(result));
     }
 
-    /**
-     * 发送错误响应
-     *
-     * @param exchange HTTP 交换对象
-     * @param code     错误码
-     * @param message  错误信息
-     * @throws IOException 写入响应失败时抛出
-     */
-
     private static void sendError(HttpExchange exchange, int code, String message) throws IOException {
         sendResponse(exchange, code, error(code, message));
     }
-
-    /**
-     * 构造标准错误 JSON 字符串
-     *
-     * @param code    错误码
-     * @param message 错误信息
-     * @return JSON 格式错误字符串
-     */
 
     private static String error(int code, String message) {
         return String.format("{\"code\":%d,\"message\":\"%s\"}", code, message);

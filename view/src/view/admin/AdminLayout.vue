@@ -29,6 +29,19 @@
         <el-menu-item index="/admin/user-manage">
           <el-icon><Setting /></el-icon>用户管理
         </el-menu-item>
+
+        <!-- 新增：膳食管理 -->
+        <el-sub-menu index="meal">
+          <template #title><el-icon><Food /></el-icon>膳食管理</template>
+          <el-menu-item index="/admin/food-manage">食品管理</el-menu-item>
+          <el-menu-item index="/admin/preference-manage">饮食喜好</el-menu-item>
+          <el-menu-item index="/admin/meal-calendar">膳食日历</el-menu-item>
+        </el-sub-menu>
+
+        <!-- 新增：统计信息 -->
+        <el-menu-item index="/admin/statistics">
+          <el-icon><DataAnalysis /></el-icon>统计信息
+        </el-menu-item>
       </el-menu>
     </el-aside>
     <el-container>
@@ -42,17 +55,22 @@
 </template>
 
 <script setup>
-/**
- * 管理员布局组件
- * 提供侧边导航菜单与顶部栏，嵌套渲染各管理子页面
- */
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
+// 导入需要的图标组件（如果项目中未安装请先安装 @element-plus/icons-vue）
+import {
+  User,
+  Place,
+  FirstAidKit,   // 注意：使用 FirstAidKit 而不是 FirstAid
+  Service,
+  Setting,
+  Food,
+  DataAnalysis
+} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const store = useStore()
 
-/** 退出登录并跳转至登录页 */
 const logout = () => {
   store.dispatch('logout')
   router.push('/login')

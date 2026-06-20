@@ -31,15 +31,4 @@ public class FoodDao extends BaseDaoImpl<Food, Integer> {
         return executeQuery(sql, foodType);
     }
 
-    /**
-     * 根据名称模糊查询食品
-     *
-     * @param keyword 查询关键字
-     * @return 名称包含关键字的食品列表
-     */
-
-    public List<Food> findByNameLike(String keyword) {
-        String sql = "SELECT * FROM food WHERE food_name LIKE ?";
-        return executeQuery(sql, "%" + keyword + "%");
-    }
 }

@@ -31,16 +31,4 @@ public class RoomDao extends BaseDaoImpl<Room, Integer> {
         return executeQuery(sql, floor);
     }
 
-    /**
-     * 根据房间号查询房间
-     *
-     * @param roomNo 房间号
-     * @return 匹配的房间对象，未找到时返回 null
-     */
-
-    public Room findByRoomNo(Integer roomNo) {
-        String sql = "SELECT * FROM room WHERE room_no = ?";
-        List<Room> list = executeQuery(sql, roomNo);
-        return list.isEmpty() ? null : list.get(0);
-    }
 }

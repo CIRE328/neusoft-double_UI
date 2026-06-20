@@ -31,15 +31,4 @@ public class RoleMenuDao extends BaseDaoImpl<RoleMenu, Integer> {
         return executeQuery(sql, roleId);
     }
 
-    /**
-     * 删除某个角色的所有菜单权限
-     *
-     * @param roleId 角色ID
-     * @return 受影响的行数
-     */
-
-    public int deleteByRoleId(Integer roleId) {
-        String sql = "DELETE FROM rolemenu WHERE role_id = ?";
-        return executeUpdate(sql, roleId);
-    }
 }

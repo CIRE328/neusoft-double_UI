@@ -15,9 +15,4 @@ public class CustomerNurseItemDao extends BaseDaoImpl<CustomerNurseItem, Integer
         return executeQuery(sql, customerId);
     }
 
-    //根据客户和项目ID查询
-    public List<CustomerNurseItem> findByCustomerAndItem(Integer customerId, Integer itemId) {
-        String sql = "SELECT * FROM customernurseitem WHERE customer_id = ? AND item_id = ? AND is_deleted = 0";
-        return executeQuery(sql, customerId, itemId);
-    }
 }
