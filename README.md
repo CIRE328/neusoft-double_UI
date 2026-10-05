@@ -72,7 +72,7 @@ view.Launcher
 
 ## 环境要求
 
-- **JDK**：8 及以上（推荐 11+）
+- **JDK**：8 及以上（推荐 21+）
 - **MySQL**：8.0+，已创建数据库 `neu` 及对应业务表
 - **IDE**：IntelliJ IDEA（推荐）或 Eclipse / VS Code
 - **依赖 JAR**（放入 `lib/` 并在 IDE 中添加到 Module Library）：
