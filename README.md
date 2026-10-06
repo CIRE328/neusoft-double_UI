@@ -173,7 +173,7 @@ java -cp "out;lib/*" view.Launcher
 | 问题 | 处理建议 |
 |------|----------|
 | `ClassNotFoundException: com.mysql.cj.jdbc.Driver` | 将 MySQL Connector/J 加入 `lib/` 并配置到 classpath |
-| 无法连接数据库 | 检查 MySQL 服务、库名 `neu`、账号密码及 `DBUtil` 配置 |
+| 无法连接数据库 | 检查 MySQL 服务、库名 `neu`、账号密码及 `DBUtil` 配置（注意将password更换为自己的） |
 | 登录后提示「未知角色」 | 确认用户 `role_id` 为 1 或 2 |
 | 中文乱码 | 编译时指定 `-encoding UTF-8`，数据库使用 `utf8mb4` |
 | 表不存在 / SQL 报错 | 确认已执行建表脚本，表名与 Dao 构造函数中一致 |
