@@ -1,6 +1,6 @@
 # 东软颐养中心管理系统
 
-东北大学软件学院基础编程实训项目——面向养老机构的 **Java Swing 桌面端** 信息管理系统，用于客户入住、床位、护理、膳食及健康管家日常业务的管理。
+东北大学软件学院基础编程实训项目——面向养老机构的 **Java Swing 桌面端和 vue web端双UI尝试** 信息管理系统，用于客户入住、床位、护理、膳食及健康管家日常业务的管理。
 
 ## 功能概览
 
@@ -75,6 +75,7 @@ view.Launcher
 - **JDK**：8 及以上（推荐 21+）
 - **MySQL**：8.0+，已创建数据库 `neu` 及对应业务表
 - **IDE**：IntelliJ IDEA（推荐）或 Eclipse / VS Code
+- **node.js**：v24.x或更新版本
 - **依赖 JAR**（放入 `lib/` 并在 IDE 中添加到 Module Library）：
   - `flatlaf-3.7.1.jar`（已包含）
   - `mysql-connector-j-*.jar`（MySQL JDBC 驱动，需自行添加）
